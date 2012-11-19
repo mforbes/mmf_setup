@@ -4,6 +4,8 @@
 .. conventions.  It will be displayed on the bitbucket source page and
 .. serves as the documentation of the directory.
 
+.. include:: .links.rst
+
 Python Setup
 ============
 This meta-project collects all of the python tools I typically use.  It also
@@ -78,7 +80,20 @@ Here are some additional requirement files:
    The list of requirements frozen from a fresh EPD_ install.
 ``freeze.txt`` :
    Snapshot of my system by running ``pip freeze > freeze.txt``
+``bleeding-edge.txt`` :
+   Installs NumPy_, SciPy_, and matplotlib_ from source.  Note: this does not
+   work for some reason because |pip|_ fails to install some compiled
+   libraries.  (The NumPy_ install will look fine, but SciPy_ will then fail.)
+   Here is `a discussion.`__  To deal with this, first use |pip| to install this
+   developmental version of NumPy_.  This will install the source.  Then go into
+   the source directory and run ``python setup.py install
+   --prefix=/path/to/virtualenv``.  I.e.::
 
+      pip install --upgrade -r bleading-edge.txt
+      cd ~/.python_environments/epd/src/numpy
+      python setup.py install --prefix=~/.python_environments/epd
+
+__ http://stackoverflow.com/questions/12574604/scipy-install-on-mountain-lion-failing
 
 
 Details
@@ -133,9 +148,6 @@ __ http://stackoverflow.com/q/5260068/1088938
    3) If you do not want to muck up your system version of python at all, then
       you can simply download the file |virtualenv.py|_.  In the commands that
       follow, replace ``virtualenv`` with ``python virtualenv.py``.
-
-.. |virtualenv.py| replace:: ``virtualenv.py``
-.. _virtualenv.py: https://raw.github.com/pypa/virtualenv/master/virtualenv.py
 
 3) Setup a virtual environment for your work.  You can have many differen
    environments, so you will need to choose a meaningful name.  I use "epd" for
@@ -236,23 +248,7 @@ __ https://github.com/gldnspud/virtualenv-pythonw-osx
 
 9) Install various requirements as follows::
 
-   pip install -r requirements/all.txt
-
-.. |EPD| replace:: Enthough Python Distribution
-.. _EPD: http://www.enthought.com/products/epd.php
-.. _mercurial: http://mercurial.selenic.com/
-.. _virtualenv: http://www.virtualenv.org/en/latest/
-.. _IPython: http://ipython.org/
-.. _Ipython notebook: \
-   http://ipython.org/ipython-doc/dev/interactive/htmlnotebook.html
-.. |pip| replace:: ``pip``
-.. _pip: http://www.pip-installer.org/
-.. _git: http://git-scm.com/
-.. _github: https://github.com
-.. _RunSnakeRun: http://www.vrplumber.com/programming/runsnakerun/
-.. _GSL: http://www.gnu.org/software/gsl/
-.. _pygsl: https://bitbucket.org/mforbes/pygsl
-.. _Sphinx: http://sphinx-doc.org/
+      pip install -r requirements/all.txt
 
 
 Using |pip|_
@@ -283,3 +279,117 @@ revision).  (See `issue 782`__)
 __ http://www.pip-installer.org/en/latest/requirements.html
 __ https://github.com/pypa/pip/blob/develop/pip/vcs/mercurial.py
 __ https://github.com/pypa/pip/issues/728
+
+Using the MKL
+=============
+The EPD_ is build using the Intel MKL_.  Here are some instructions on how to
+compile your own version of `NumPy and SciPy with the MKL`__.
+
+__ http://software.intel.com/en-us/articles/numpyscipy-with-intel-mkl
+
+* Checkout the source code::
+
+     pip install --no-install -e git+http://github.com/numpy/numpy#egg=numpy-dev
+     pip install --no-install -e git+http://github.com/scipy/scipy#egg=scipy-dev
+
+* Setup the environment to use the `Intel compilers`_::
+
+     . /usr/local/bin/intel64.sh
+     . /opt/intel/Compiler/11.1/069/mkl/tools/environment/mklvarsem64t.sh
+
+* Edit the ``site.cfg`` file in the NumPy_ source directory.  I am not sure
+  exactly which libraries to include. See these discussions:
+
+     * http://software.intel.com/en-us/articles/numpyscipy-with-intel-mkl
+     * Check the ``site.cfg`` in your EPD_ installation.
+
+  .. code::
+
+     cd ~/.python_environments/epd/src/numpy
+     cp site.cfg.example site.cfg
+     vi site.cfg
+
+  Here is what I used::
+
+     [mkl]
+     library_dirs = /opt/intel/Compiler/11.1/069/mkl/lib/em64t/
+     include_dirs = /opt/intel/Compiler/11.1/069/mkl/include
+     lapack_libs = mkl_lapack95_lp64
+     mkl_libs = mkl_def, mkl_intel_lp64, mkl_intel_thread, mkl_core, mkl_mc
+
+  I also needed to modify ``numpy/distutils/intelccompiler.py`` as follows::
+
+          cc_args = "-fPIC"
+          def __init__ (self, verbose=0, dry_run=0, force=0):
+              UnixCCompiler.__init__ (self, verbose,dry_run, force)
+     -        self.cc_exe = 'icc -m64 -fPIC'
+     +        self.cc_exe = 'icc -O3 -g -openmp -m64 -fPIC'
+              compiler = self.cc_exe
+              self.set_executables(compiler=compiler,
+                                   compiler_so=compiler,
+
+* Build both NumPy_ and SciPy_ with the following::
+
+     cd ~/.python_environments/epd/src/numpy
+     python setup.py config --compiler=intelem --fcompiler=intelem\
+                 build_clib --compiler=intelem --fcompiler=intelem\
+                 build_ext --compiler=intelem --fcompiler=intelem\
+                 install
+     cd ~/.python_environments/epd/src/scipy
+
+* Run and check the build configuration::
+
+     $ python -c "import numpy;print numpy.__file__;print numpy.show_config()"
+     /phys/users/mforbes/.python_environments/epd/lib/python2.7/site-packages/numpy/__init__.pyc
+     lapack_opt_info:
+         libraries = ['mkl_lapack95_lp64', 'mkl_def', 'mkl_intel_lp64', 'mkl_intel_thread', 'mkl_core', 'mkl_mc', 'pthread']
+         library_dirs = ['/opt/intel/Compiler/11.1/069/mkl/lib/em64t/']
+         define_macros = [('SCIPY_MKL_H', None)]
+         include_dirs = ['/opt/intel/Compiler/11.1/069/mkl/include']
+     blas_opt_info:
+         libraries = ['mkl_def', 'mkl_intel_lp64', 'mkl_intel_thread', 'mkl_core', 'mkl_mc', 'pthread']
+         library_dirs = ['/opt/intel/Compiler/11.1/069/mkl/lib/em64t/']
+         define_macros = [('SCIPY_MKL_H', None)]
+         include_dirs = ['/opt/intel/Compiler/11.1/069/mkl/include']
+     lapack_mkl_info:
+         libraries = ['mkl_lapack95_lp64', 'mkl_def', 'mkl_intel_lp64', 'mkl_intel_thread', 'mkl_core', 'mkl_mc', 'pthread']
+         library_dirs = ['/opt/intel/Compiler/11.1/069/mkl/lib/em64t/']
+         define_macros = [('SCIPY_MKL_H', None)]
+         include_dirs = ['/opt/intel/Compiler/11.1/069/mkl/include']
+     blas_mkl_info:
+         libraries = ['mkl_def', 'mkl_intel_lp64', 'mkl_intel_thread', 'mkl_core', 'mkl_mc', 'pthread']
+         library_dirs = ['/opt/intel/Compiler/11.1/069/mkl/lib/em64t/']
+         define_macros = [('SCIPY_MKL_H', None)]
+         include_dirs = ['/opt/intel/Compiler/11.1/069/mkl/include']
+     mkl_info:
+         libraries = ['mkl_def', 'mkl_intel_lp64', 'mkl_intel_thread', 'mkl_core', 'mkl_mc', 'pthread']
+         library_dirs = ['/opt/intel/Compiler/11.1/069/mkl/lib/em64t/']
+         define_macros = [('SCIPY_MKL_H', None)]
+         include_dirs = ['/opt/intel/Compiler/11.1/069/mkl/include']
+     None
+
+  .. note:: You will need to setup the environment to run with the MKL_
+     libraries.  The EPD_ avoids this by distributing the libraries.  I suggest
+     that you add the following to the activation script::
+
+        cat >> ~/.python_environments/epd/bin/activate <<EOF
+        
+        # This adds the MKL libraries to the path for use with my custom numpy
+        # and scipy builds.
+        . /usr/local/bin/intel64.sh
+        . /opt/intel/Compiler/11.1/069/mkl/tools/environment/mklvarsem64t.sh
+        EOF
+
+
+See also:
+
+  * http://math.nju.edu.cn/help/mathhpc/doc/intel/mkl/mklgs_lnx.htm
+  * http://blog.sun.tc/2010/11/numpy-and-scipy-with-intel-mkl-on-linux.html
+  * http://www.scipy.org/Installing_SciPy/Linux
+
+    This suggests maybe using the runtime libraries instead (just ``mkl_libs =
+    mkl_rt``).  I have not yet tried this.
+
+  * http://cournape.github.com/Bento/
+  
+    It looks like it might be easier to use Bento_ rather than distutils
