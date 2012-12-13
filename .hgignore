@@ -1,3 +1,4 @@
 syntax: glob
 
 .README.html
+.DS_Store

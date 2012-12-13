@@ -4,10 +4,51 @@
 .. conventions.  It will be displayed on the bitbucket source page and
 .. serves as the documentation of the directory.
 
-.. include:: .links.rst
+.. .. include:: .links.rst
 
-Python Setup
-============
+.. -*- rst -*- -*- restructuredtext -*-
+
+.. This file is included by others.  It contains external links and
+.. replacements.
+
+
+.. |virtualenv.py| replace:: ``virtualenv.py``
+.. _virtualenv.py: https://raw.github.com/pypa/virtualenv/master/virtualenv.py
+
+.. |EPD| replace:: Enthough Python Distribution
+.. _EPD: http://www.enthought.com/products/epd.php
+
+.. _mercurial: http://mercurial.selenic.com/
+.. _virtualenv: http://www.virtualenv.org/en/latest/
+.. _IPython: http://ipython.org/
+.. _Ipython notebook: \
+   http://ipython.org/ipython-doc/dev/interactive/htmlnotebook.html
+.. |pip| replace:: ``pip``
+.. _pip: http://www.pip-installer.org/
+.. _git: http://git-scm.com/
+.. _github: https://github.com
+.. _RunSnakeRun: http://www.vrplumber.com/programming/runsnakerun/
+.. _GSL: http://www.gnu.org/software/gsl/
+.. _pygsl: https://bitbucket.org/mforbes/pygsl
+.. _Sphinx: http://sphinx-doc.org/
+.. _SciPy: http://www.scipy.org/
+.. _NumPy: http://numpy.scipy.org/
+.. _Python: http://www.python.org/
+.. _matplotlib: http://matplotlib.org/
+.. _Matlab: http://www.mathworks.com/products/matlab/
+.. _MKL: http://software.intel.com/en-us/intel-mkl
+.. _Intel compilers: http://software.intel.com/en-us/intel-compilers
+.. _Bento: http://cournape.github.com/Bento/
+.. _pyaudio: http://people.csail.mit.edu/hubert/pyaudio/
+.. _PortAudio: http://www.portaudio.com/archives/pa_stable_v19_20111121.tgz
+
+.. sidebar:: Sidebar
+
+   .. contents::
+
+==============
+ Python Setup
+==============
 This meta-project collects all of the python tools I typically use.  It also
 serves as a fairly minimal example of setting up a package the |pip|_ can
 install, and specifying dependencies.
@@ -92,6 +133,8 @@ Here are some additional requirement files:
       pip install --upgrade -r bleading-edge.txt
       cd ~/.python_environments/epd/src/numpy
       python setup.py install --prefix=~/.python_environments/epd
+``mac.txt`` :
+   Specific packages for Mac's.
 
 __ http://stackoverflow.com/questions/12574604/scipy-install-on-mountain-lion-failing
 
@@ -393,3 +436,17 @@ See also:
   * http://cournape.github.com/Bento/
   
     It looks like it might be easier to use Bento_ rather than distutils
+
+================
+ Other Software
+================
+This section describes various other pieces of software that I use that interact
+with python.
+
+pyaudio_
+========
+pyaudio_ is a python interface to the PortAudio_ library for generating sounds
+and sound files.  To do real-time sound generation, one really needs to
+non-blocking interface (otherwise, the delay between blocking calls will affect
+the signal in a manner that is difficult to compensate for).  Unfortunately, the
+default builds require Mac OS X 10.7 or higher.

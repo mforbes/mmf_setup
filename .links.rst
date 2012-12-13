@@ -31,3 +31,5 @@
 .. _MKL: http://software.intel.com/en-us/intel-mkl
 .. _Intel compilers: http://software.intel.com/en-us/intel-compilers
 .. _Bento: http://cournape.github.com/Bento/
+.. _pyaudio: http://people.csail.mit.edu/hubert/pyaudio/
+.. _PortAudio: http://www.portaudio.com/archives/pa_stable_v19_20111121.tgz
