@@ -41,6 +41,19 @@
 .. _Bento: http://cournape.github.com/Bento/
 .. _pyaudio: http://people.csail.mit.edu/hubert/pyaudio/
 .. _PortAudio: http://www.portaudio.com/archives/pa_stable_v19_20111121.tgz
+.. _MathJax: http://www.mathjax.org/
+.. _reStructuredText: http://docutils.sourceforge.net/rst.html
+
+.. default-role:: math
+
+.. This is so that I can work offline.  It should be ignored on bitbucket for
+.. example.
+
+.. raw:: html
+
+   <script type="text/javascript"
+    src="/Users/mforbes/.mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+   </script>
 
 .. sidebar:: Sidebar
 
@@ -450,3 +463,48 @@ and sound files.  To do real-time sound generation, one really needs to
 non-blocking interface (otherwise, the delay between blocking calls will affect
 the signal in a manner that is difficult to compensate for).  Unfortunately, the
 default builds require Mac OS X 10.7 or higher.
+
+reStructuredText_
+=================
+I like to write my local documentation in reStructuredText_ (such as this
+file).  As I often use math, I make the default role ``:math:```` and use
+MathJax_.  Here is an example:
+
+.. code:: rst
+
+   .. default-role:: math
+
+   Now I can type math like this: `E=mc^2` or in an equation line this
+
+   .. math::
+      \int_0^1 e^{x} = e - 1
+
+.. note::
+   Now I can type math like this: `E=mc^2` or in an equation line this
+
+   .. math::
+      \int_0^1 e^{x} = e - 1
+
+In order to work offline, I install MathJax_ locally using the IPython_ as
+`described here`__:
+
+.. code:: python
+
+   from IPython.external.mathjax import install_mathjax
+   install_mathjax()
+
+__ https://github.com/ipython/ipython/pull/714
+
+This installs it in
+``~/.python_environments/epd/lib/python2.7/site-packages/IPython/frontend/html/notebook/static/mathjax``
+which can be used locally.  I symlink it to ``~/.mathjax``, but you must find a
+way to inject the stylesheet into your HTML.  One way is with the ``.. raw::
+html`` directive:
+
+.. code:: html
+
+   .. raw:: html
+
+      <script type="text/javascript"
+       src="/Users/mforbes/.mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+      </script>
