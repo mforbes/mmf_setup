@@ -43,6 +43,9 @@
 .. _PortAudio: http://www.portaudio.com/archives/pa_stable_v19_20111121.tgz
 .. _MathJax: http://www.mathjax.org/
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
+.. _Emacs: http://www.gnu.org/software/emacs/
+.. _Pymacs: https://github.com/pinard/Pymacs
+.. _Ropemacs: http://rope.sourceforge.net/ropemacs.html
 
 .. default-role:: math
 
@@ -508,3 +511,24 @@ html`` directive:
       <script type="text/javascript"
        src="/Users/mforbes/.mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
       </script>
+
+Emacs_
+======
+
+I use Emacs_ as my principle editor and like to have access to syntax
+highlighting, auto-completion etc. Thus, I typically install the following
+packages, but these are not completely straightforward.
+
+Pymacs_
+-------
+
+Pymacs_ allows Emacs_ to access the python interpreter and is used by Ropemacs_
+to provide some nice features like code checking. The source appears not to be
+pip_ installable, so you must download it and run ``make`` as follows:
+
+.. code:: bash
+
+   git clone http://github.com/pinard/Pymacs.git
+   cd Pymacs
+   make
+   pip install -e .
