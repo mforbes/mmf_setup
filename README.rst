@@ -6,17 +6,14 @@
 
 .. .. include:: .links.rst
 
-.. -*- rst -*- -*- restructuredtext -*-
-
-.. This file is included by others.  It contains external links and
-.. replacements.
-
-
 .. |virtualenv.py| replace:: ``virtualenv.py``
 .. _virtualenv.py: https://raw.github.com/pypa/virtualenv/master/virtualenv.py
 
 .. |EPD| replace:: Enthough Python Distribution
 .. _EPD: http://www.enthought.com/products/epd.php
+.. _Anaconda: https://store.continuum.io/cshop/anaconda
+.. _Enthought: http://www.enthought.com
+.. _Continuum Analytics: http://continuum.io
 
 .. _mercurial: http://mercurial.selenic.com/
 .. _virtualenv: http://www.virtualenv.org/en/latest/
@@ -33,6 +30,7 @@
 .. _Sphinx: http://sphinx-doc.org/
 .. _SciPy: http://www.scipy.org/
 .. _NumPy: http://numpy.scipy.org/
+.. _Numba: https://github.com/numba/numba#readme
 .. _Python: http://www.python.org/
 .. _matplotlib: http://matplotlib.org/
 .. _Matlab: http://www.mathworks.com/products/matlab/
@@ -69,19 +67,55 @@ This meta-project collects all of the python tools I typically use.  It also
 serves as a fairly minimal example of setting up a package the |pip|_ can
 install, and specifying dependencies.
 
+Summary
+=======
+There are two recommended ways of installing python: 
+
+|EPD|_:       
+   The |EPD|_ provided by Enthought_is a complete python installation including
+   NumPy_, SciPy_, matplotlib_, and many other useful tools.  These all come
+   packaged in a single working distribution that can be installed at once.
+   There is both a free version, and a professional version -- the latter is
+   free for academic use and includes some additional tools for analysis and
+   visualization.
+Anaconda_:
+   An alternative complete python installation is provided through Anaconda_
+   from `Continuum Analytics`_, developed by many of the people who developed
+   the |EPD|_.  There are also free and professional versions with the latter
+   being free for academic use.  One caveat is that Anaconda_ does not work on
+   as many systems (it will not work on my 32 bit Mac for example).  As a plus,
+   in includes some cutting-edge high-performance tools like Numba_.
+
+My suggestion is to install one (or both) of these, then create appropriate
+virtual environments for managing any additional packages you need to install.
+In this way, you keep your system python clean, have access to the latest tools
+in a complete distribution (which is also kept clean) and can play with various
+package combinations.  (Important, for example, if you want to make sure you
+understand all of the dependencies of your code.)
+
 Quick Start
 ===========
-If you are impatient and courageous, here is the exceutive summary:
+If you are impatient and courageous, here is the executive summary based on the
+|EPD|_:
 
-* Install |EPD|_, git_, and GSL_.
+* Install |EPD|_ (or Anaconda_), git_, and GSL_.
+* Install virtualenv_ (and pip_ which is not provided by |EPD|_)::
 
-.. code:: bash
+   sudo easy_install pip
+   sudo pip install virtualenv
 
-   pip install virtualenv
+  or down load virtualenv.py_ and replace `virtualenv` with 
+  `python virtualenv.py` below if you want to keep your base python installation
+  pure.
+* Install the virtual environments setup some aliases:
+
    virtualenv --system-site-packages --distribute ~/.python_environments/epd
    virtualenv --no-site-packages --distribute ~/.python_environments/clean
    virtualenv -p /usr/bin/python --system-site-packages --distribute \
               ~/.python_environments/sys
+   virtualenv -p ~/usr/apps/anaconda/Current/bin/python \
+              --system-site-packages --distribute \
+              ~/.python_environments/anaconda
 
    cat >> ~/.bashrc <<EOF
    alias v.epd=". ~/.python_environments/epd/bin/activate"
@@ -90,7 +124,11 @@ If you are impatient and courageous, here is the exceutive summary:
    v.epd
    EOF
 
+* Install Mercurial_::
+
    pip install hg
+
+* If on a Mac, then fix ``pythonw``::
 
    mkdir -p ~/src/python/git
    cd ~/src/python/git
@@ -98,11 +136,12 @@ If you are impatient and courageous, here is the exceutive summary:
    cd virtualenv-pythonw-osx
    python install_pythonw.py /Users/mforbes/.python_environments/epd
 
-Then choose the set of requirements and:
+* Activate your desired virtual environment and choose the set of requirements
+  to install:: 
 
-.. code:: bash
-
+   v.epd
    pip install -r all.txt
+
 
 Requirements
 ============
@@ -512,6 +551,13 @@ html`` directive:
        src="/Users/mforbes/.mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
       </script>
 
+Profiling
+=========
+This page has a great discussion of line and memory profiling:
+
+* http://scikit-learn.org/dev/developers/performance.html
+
+
 Emacs_
 ======
 
@@ -532,3 +578,57 @@ pip_ installable, so you must download it and run ``make`` as follows:
    cd Pymacs
    make
    pip install -e .
+
+
+==========
+ Problems
+==========
+
+I had problems installing a virtual environment with Anaconda_.  When I try to
+do this out of the box, I get::
+
+   $ virtualenv -p ~/usr/apps/anaconda/Current/bin/python --system-site-packages --distribute ~/.python_environments/anaconda
+   Running virtualenv with interpreter /Users/mforbes/usr/apps/anaconda/Current/bin/python
+   New python executable in /Users/mforbes/.python_environments/anaconda/bin/python
+   Please make sure you remove any previous custom paths from your /Users/mforbes/.pydistutils.cfg file.
+   Installing distribute..........
+     Complete output from command /Users/mforbes/.pyth.../anaconda/bin/python -c "#!python
+   \"\"\"Bootstra...   sys.exit(main())
+   ":
+     Traceback (most recent call last):
+     File "<string>", line 21, in <module>
+     File "/Users/mforbes/usr/apps/anaconda/Current/lib/python2.7/tempfile.py", line 34, in <module>
+       from random import Random as _Random
+     File "/Users/mforbes/usr/apps/anaconda/Current/lib/python2.7/random.py", line 47, in <module>
+       from os import urandom as _urandom
+   ImportError: cannot import name urandom
+   ...
+   " failed with error code 1
+
+After playing around a bit, I found that, even though the copied executable
+``~/.python_environment/anaconda/bin/python`` was exactly the same as
+``~/usr/app/anaconda/Current/anaconda/bin/python``, the version was improperly
+reported::
+
+   $ diff ~/usr/apps/anaconda/Current/bin/python ~/.python_environments/anaconda/bin/python
+   $ ~/usr/apps/anaconda/Current/bin/python --version
+   Python 2.7.3 :: Anaconda 1.3.1 (x86_64)
+   $ ~/.python_environments/anaconda/bin/python --version
+   Python 2.7.1
+
+The problem is that ``libpython`` also needs to be included::
+
+   ln -s ~/usr/apps/anaconda/Current/lib/libpython2.7.dylib ~/.python_environments/anaconda/lib/
+   $ ~/.python_environments/anaconda/bin/python --version   
+   Python 2.7.3 :: Continuum Analytics, Inc.
+
+Better, but not quite right, however, this gets things working::
+
+   $ virtualenv -p ~/usr/apps/anaconda/Current/bin/python --system-site-packages --distribute ~/.python_environments/anaconda
+   Running virtualenv with interpreter /Users/mforbes/usr/apps/anaconda/Current/bin/python
+   New python executable in /Users/mforbes/.python_environments/anaconda/bin/python
+   Please make sure you remove any previous custom paths from your /Users/mforbes/.pydistutils.cfg file.
+   Installing distribute...........................................................................................................................................................................................................................done.
+   Installing pip................done.
+
+Not sure yet if there might be other libraries that need to be copied...
