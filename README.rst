@@ -12,6 +12,8 @@
 .. |EPD| replace:: Enthough Python Distribution
 .. _EPD: http://www.enthought.com/products/epd.php
 .. _Anaconda: https://store.continuum.io/cshop/anaconda
+.. _Conda: http://docs.continuum.io/conda
+
 .. _Enthought: http://www.enthought.com
 .. _Continuum Analytics: http://continuum.io
 
@@ -90,11 +92,19 @@ My suggestion is to install one (or both) of these, then create appropriate
 virtual environments for managing any additional packages you need to install.
 In this way, you keep your system python clean, have access to the latest tools
 in a complete distribution (which is also kept clean) and can play with various
-package combinations.  (Important, for example, if you want to make sure you
-understand all of the dependencies of your code.)
+package combinations: Important, for example, if you want to make sure you
+understand all of the dependencies of your code.
+
+Note that Anaconda_ has its own environment manager instead of virtualenv_
+called Conda_ so the setups are different.  We describe both flavours here.
+
 
 Quick Start
 ===========
+
+|EPD|_
+------
+
 If you are impatient and courageous, here is the executive summary based on the
 |EPD|_:
 
@@ -107,7 +117,7 @@ If you are impatient and courageous, here is the executive summary based on the
   or down load virtualenv.py_ and replace `virtualenv` with 
   `python virtualenv.py` below if you want to keep your base python installation
   pure.
-* Install the virtual environments setup some aliases:
+* Install the virtual environments setup some aliases::
 
    virtualenv --system-site-packages --distribute ~/.python_environments/epd
    virtualenv --no-site-packages --distribute ~/.python_environments/clean
@@ -132,8 +142,10 @@ If you are impatient and courageous, here is the executive summary based on the
 
    mkdir -p ~/src/python/git
    cd ~/src/python/git
-   git clone http://github.com/gldnspud/virtualenv-pythonw-osx.git
+   #git clone http://github.com/gldnspud/virtualenv-pythonw-osx.git
+   git clone http://github.com/nicholsn/virtualenv-pythonw-osx.git
    cd virtualenv-pythonw-osx
+   deactivate; v.epd        # Make sure you use the appropriate virtualenv
    python install_pythonw.py /Users/mforbes/.python_environments/epd
 
 * Activate your desired virtual environment and choose the set of requirements
@@ -142,6 +154,20 @@ If you are impatient and courageous, here is the executive summary based on the
    v.epd
    pip install -r all.txt
 
+Anaconda_
+---------
+I install Anaconda_ in ``/data/apps/anaconda/1.3.1`` which I symlink to
+``/data/apps/anaconda/current``.  Add ``/data/apps/anaconda/current/bin`` to
+your path.  One can use Conda_ to manage the equivalents of virtual
+environments, but for now I am just using a "global" environment.  I needed to
+do the following to get to a working state::
+
+   conda update anaconda conda ipython pip sympy numexpr
+   conda pip ipdb winpdb zope.interface mercurial
+   conda pip psutil memory_profiler
+   conda pip scikits.bvp1lg theano
+   conda pip pp
+   conda pip 
 
 Requirements
 ============
@@ -580,55 +606,87 @@ pip_ installable, so you must download it and run ``make`` as follows:
    pip install -e .
 
 
+Anaconda_
+=========
+Anaconda_ provides a very nice python system, especially with the Conda_ package
+management tool, but there are a few problems:
+
+1) No installation for 32-bit Mac OS X systems.  (No longer an issue for me
+   since I finally have a 64 bit machine.)
+2) No Mayavi_.  This means that I must maintain an EPD_ 32-bit installation as
+   well (with all my required packages) in order to visualize.
+
+Creating Packages
+-----------------
+As an example, here we create a Conda_ package for installing the FFTW_ and
+related software.  We start with a fresh Anaconda_ installation: (this command
+would show if we have any packages installed that are not managed by Conda_)
+
+   $ conda package --untracked
+   prefix: /data/apps/anaconda/1.3.1
+
+Now we manually install the FFTW_ etc.::
+
+   cd ~/src
+   wget http://www.fftw.org/fftw-3.3.3.tar.gz
+   wget http://www.fftw.org/fftw-3.3.3.tar.gz.md5sum
+   md5 fftw-3.3.3.tar.gz           # Check that this is okay
+   tar -zxvf fftw-3.3.3.tar.gz
+   cd fftw-3.3.3
+
+   # Build and install the single, double, long-double
+   # and quad-precision versions
+   PREFIX=/data/apps/anaconda/current/
+   for opt in " " "--enable-sse2 --enable-single" \
+                  "--enable-long-double" "--enable-quad-precision"; do
+     ./configure --prefix="${PREFIX}"\
+                 --enable-threads\
+                 --enable-shared\
+                 $opt
+     make -j8 install
+   done
+   
+   # Note: this needs a patch to work on Mac OS X
+   # https://code.google.com/p/anfft/issues/detail?id=4
+   export FFTW_PATH=/data/apps/anaconda/current/lib/
+   pip install --upgrade anfft pyfftw
+   
+
+These are untracked::
+
+   $ conda package --untracked
+   prefix: /data/apps/anaconda/1.3.1
+   bin/fftw-wisdom
+   ...
+   include/fftw3.f
+   ...
+   lib/libfftw3.3.dylib
+   ...
+   lib/pkgconfig/fftw3.pc
+   ...
+   lib/python2.7/site-packages/Mako-0.7.3-py2.7.egg-info/PKG-INFO
+   ...
+   lib/python2.7/site-packages/anfft-0.2-py2.7.egg-info/PKG-INFO
+   ...
+   lib/python2.7/site-packages/pyFFTW-0.9.0-py2.7.egg-info/PKG-INFO
+   ...
+   lib/python2.7/site-packages/pyfftw/__init__.py
+   ...
+   share/info/fftw3.info
+   ...
+   share/man/man1/fftw-wisdom-to-conf.1
+   ...
+
+These can be bundled into a new package that can later be installed directly::
+
+   $ conda package --pkg-name=fftw --pkg-version=3.3.3
+   prefix: /data/apps/anaconda/1.3.1
+   Number of files: 82
+   fftw-3.3.3-py27_0.tar.bz2 created successfully
+
 ==========
  Problems
 ==========
 
-I had problems installing a virtual environment with Anaconda_.  When I try to
-do this out of the box, I get::
-
-   $ virtualenv -p ~/usr/apps/anaconda/Current/bin/python --system-site-packages --distribute ~/.python_environments/anaconda
-   Running virtualenv with interpreter /Users/mforbes/usr/apps/anaconda/Current/bin/python
-   New python executable in /Users/mforbes/.python_environments/anaconda/bin/python
-   Please make sure you remove any previous custom paths from your /Users/mforbes/.pydistutils.cfg file.
-   Installing distribute..........
-     Complete output from command /Users/mforbes/.pyth.../anaconda/bin/python -c "#!python
-   \"\"\"Bootstra...   sys.exit(main())
-   ":
-     Traceback (most recent call last):
-     File "<string>", line 21, in <module>
-     File "/Users/mforbes/usr/apps/anaconda/Current/lib/python2.7/tempfile.py", line 34, in <module>
-       from random import Random as _Random
-     File "/Users/mforbes/usr/apps/anaconda/Current/lib/python2.7/random.py", line 47, in <module>
-       from os import urandom as _urandom
-   ImportError: cannot import name urandom
-   ...
-   " failed with error code 1
-
-After playing around a bit, I found that, even though the copied executable
-``~/.python_environment/anaconda/bin/python`` was exactly the same as
-``~/usr/app/anaconda/Current/anaconda/bin/python``, the version was improperly
-reported::
-
-   $ diff ~/usr/apps/anaconda/Current/bin/python ~/.python_environments/anaconda/bin/python
-   $ ~/usr/apps/anaconda/Current/bin/python --version
-   Python 2.7.3 :: Anaconda 1.3.1 (x86_64)
-   $ ~/.python_environments/anaconda/bin/python --version
-   Python 2.7.1
-
-The problem is that ``libpython`` also needs to be included::
-
-   ln -s ~/usr/apps/anaconda/Current/lib/libpython2.7.dylib ~/.python_environments/anaconda/lib/
-   $ ~/.python_environments/anaconda/bin/python --version   
-   Python 2.7.3 :: Continuum Analytics, Inc.
-
-Better, but not quite right, however, this gets things working::
-
-   $ virtualenv -p ~/usr/apps/anaconda/Current/bin/python --system-site-packages --distribute ~/.python_environments/anaconda
-   Running virtualenv with interpreter /Users/mforbes/usr/apps/anaconda/Current/bin/python
-   New python executable in /Users/mforbes/.python_environments/anaconda/bin/python
-   Please make sure you remove any previous custom paths from your /Users/mforbes/.pydistutils.cfg file.
-   Installing distribute...........................................................................................................................................................................................................................done.
-   Installing pip................done.
-
-Not sure yet if there might be other libraries that need to be copied...
+I had problems installing a virtual environment with Anaconda_.  *Don't do
+this!*  Use Conda_ instead.
