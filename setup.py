@@ -27,13 +27,16 @@ with open(os.path.join(_HERE, 'README.rst')) as _f:
 
 
 setup(name=NAME,
-      version='0.1.0',
+      version='0.1.1',
       packages=find_packages(exclude=['tests']),
 
       install_requires=install_requires,
       tests_require=test_requires,
       extras_require={},
       setup_requires=[],
+
+      # Include data from MANIFEST.in
+      include_package_data=True,
 
       # Metadata
       author='Michael McNeil Forbes',
