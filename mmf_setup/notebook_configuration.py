@@ -106,7 +106,7 @@ def install_extensions():
 
 
 def nbinit(theme='mmf', toggle_code=False):
-    install_extensions(verbose=2)
+    install_extensions()
     clear_output()
     with open(os.path.join(
             _HERE, 'themes', '{theme}.css'.format(theme=theme))) as _f:
