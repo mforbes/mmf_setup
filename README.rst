@@ -102,13 +102,13 @@ In particular, I structure it for the following use-cases:
 1. Install this package from the source directory, PyPI_, etc. with
    one of the following:
 
-  * **Directly from PyPI** (*This will only work once the project is published on PyPI.*)
+  * **Directly from PyPI**
 
    ``pip install --user mmf_setup``
 
   * **From Source**
 
-    ``pip install --user hg+https://bitbucket.org/mforbes/python_setup``
+    ``pip install --user hg+https://bitbucket.org/mforbes/mmf_setup``
 
   * **From Local Source** (*Run this from the source directory after you unpack it.*)
 
