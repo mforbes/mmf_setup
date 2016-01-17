@@ -16,7 +16,7 @@ from setuptools.command.test import test as original_test
 
 NAME = "mmf_setup"
 
-install_requires = ['nbstripout >= 0.1.1']
+install_requires = ['nbstripout==0.1.2']
 test_requires = []
 
 # Get the long description from the README.rst file
@@ -26,7 +26,7 @@ with open(os.path.join(_HERE, 'README.rst')) as _f:
 
 
 setup(name=NAME,
-      version='0.1.2',
+      version='0.1.3',
       packages=find_packages(exclude=['tests']),
 
       install_requires=install_requires,

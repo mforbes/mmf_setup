@@ -1,11 +1,12 @@
 #!/bin/env python
 from optparse import OptionParser
-from os.path import exists
+from os.path import exists, abspath, expanduser
 
 import mmf_setup
 
 VARIABLES = [
     ('MMF_SETUP', mmf_setup.MMF_SETUP, mmf_setup.MMF_SETUP),
+    ('HGRCPATH', '${HGRCPATH:-~/.hgrc}', expanduser('~/.hgrc')),
     ('HGRCPATH', '${{HGRCPATH}}:{HGRC}'.format(
         HGRC=mmf_setup.HGRC), mmf_setup.HGRC),
 ]
