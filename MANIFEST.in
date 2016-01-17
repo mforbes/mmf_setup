@@ -1,8 +1,8 @@
 # Documentation
 recursive-include docs *
 
-# Themes
-recursive-include mmf_setup/themes *
+# Themes etc.
+recursive-include mmf_setup/_data *
 
 # Misc
 include CHANGES.txt

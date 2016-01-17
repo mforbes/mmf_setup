@@ -129,6 +129,14 @@ In particular, I structure it for the following use-cases:
    specify different themes. (Presently only ``theme='default'`` and
    ``theme='mmf'`` are supported.)
 
+3. To use the shell tools, source the ``mmf_setup`` file:
+
+    ``. mmf_setup``
+
+    This will add a custom ``hgrc`` file to your ``HGRCPATH`` which
+    provides commands for committing clean notebooks such as ``hg
+    ccommit`` and ``hg cstatus``.
+
 
 ==================
  Installing Tools
@@ -140,9 +148,36 @@ extensions`__ from `here`__::
       import mmf_setup.notebook_configuration
       mmf_setup.notebook_configuration.install_extensions()
 
-=======
- Notes
-=======
+======================
+ Mercurial (hg) Tools
+======================
+
+If you source the output of the ``mmf_setup`` script::
+
+   . mmf_setup
+
+then your ``HGRCPATH`` will be amended to include this projects
+``hgrc`` file which does the following:
+
+1. Adds some useful extensions.
+2. Adds the following commands:
+
+   * ``hg lga`` (or ``hg lg``): provides a nice concise graphical
+     display of the repo.
+   * ``hg cstatus`` (or ``hg cst``):
+   * ``hg cdiff``: same for ``hg diff``
+   * ``hg cediff``: same for ``hg ediff``
+   * ``hg ccommit`` (or ``hg ccom``): same for ``hg com`` but also
+     commits the full version of the notebooks with output as a new
+     node off the present node with the message ``OUT: Automatic commit of
+     output``.  The files in the repository will be left with the
+     clean commit as the parent so this output commit will be dangling
+     unless you want to include it.
+
+
+
+Notes
+=====
 
 Various notes about python, IPython, etc. are stored in the docs folder.
 
