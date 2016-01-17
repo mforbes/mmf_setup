@@ -4,9 +4,9 @@ This is a meta-package providing an easy way to initialize a python
 distribution to have the tools I commonly use.
 
 **Source:**
-  https://bitbucket.org/mforbes/python_setup
+  https://bitbucket.org/mforbes/mmf_setup
 **Issues:**
-  https://bitbucket.org/mforbes/python_setup/issues
+  https://bitbucket.org/mforbes/mmf_setup/issues
 """
 import os.path
 import sys
@@ -26,7 +26,7 @@ with open(os.path.join(_HERE, 'README.rst')) as _f:
 
 
 setup(name=NAME,
-      version='0.1.3',
+      version='0.1.4.dev0',
       packages=find_packages(exclude=['tests']),
 
       install_requires=install_requires,
@@ -42,7 +42,7 @@ setup(name=NAME,
       # Metadata
       author='Michael McNeil Forbes',
       author_email='michael.forbes+bitbucket@gmail.com',
-      url='https://bitbucket.org/mforbes/python_setup',
+      url='https://bitbucket.org/mforbes/mmf_setup',
       description="Python Tools",
       long_description=LONG_DESCRIPTION,
 
