@@ -24,34 +24,43 @@ lga = glog --style=${MMF_SETUP}/_data/hgthemes/map-cmdline.lg -l20
 # jupyter notebooks.  They require the nbstripout package:
 # pip install --index-url=https://bitbucket.org/mforbes/mypi/ nbstripout
 
-# The commit versions
-cclean = !hg tag -fl cstatus_parent &&\
-          hg com -qm "CHK: cstatus checkpoint" &&\
-          hg tag -fl cstatus_checkpoint &&\
-          hg debugsetparents cstatus_parent &&\
-          hg debugrebuilddirstate&&\
-          hg status -man0 | xargs nbstripout
+# This version will not run commit hooks
+_commit = commit
+cclean = !hg tag -fl cstatus_parent;\
+          hg _commit -qm "CHK: cstatus checkpoint";\
+          hg tag -fl cstatus_checkpoint;\
+          hg debugsetparents cstatus_parent;\
+          hg debugrebuilddirstate;\
+          hg status -man0 | xargs -0 nbstripout
 
-crestore = !hg update -C cstatus_checkpoint &&\
-            hg debugsetparents cstatus_parent &&\
-            hg debugrebuilddirstate &&\
-            hg strip cstatus_checkpoint --no-backup &&\
+crestore = !hg update -C cstatus_checkpoint;\
+            hg debugsetparents cstatus_parent;\
+            hg debugrebuilddirstate;\
+            hg strip cstatus_checkpoint --no-backup;\
             hg tag -l --remove cstatus_parent
 
-cstatus = !hg cclean &&\
-           hg status "$@" &&\
+cstatus = !hg cclean;\
+           hg status "$@";\
            hg crestore
 
-cdiff = !hg cclean && hg diff "$@" && hg crestore
-cediff = !hg cclean && hg ediff "$@" && hg crestore
+cdiff = !hg cclean; hg diff "$@"; hg crestore
+cediff = !hg cclean; hg ediff "$@"; hg crestore
 
-ccommit = !hg cclean &&\
-           hg commit "$@" &&\
-           hg tag -fl ccommit-parent &&\
-           hg crestore &&\
-           hg debugsetparents ccommit-parent &&\
-           hg debugrebuilddirstate &&\
-           hg commit -qm "OUT: Automatic commit of output" &&\
-           hg debugsetparents ccommit-parent &&\
-           hg debugrebuilddirstate &&\
+ccommit = !hg cclean;\
+           hg commit "$@";\
+           hg tag -fl ccommit-parent;\
+           hg crestore;\
+           hg debugsetparents ccommit-parent;\
+           hg debugrebuilddirstate;\
+           hg _commit -qm "OUT: Automatic commit of output";\
+           hg debugsetparents ccommit-parent;\
+           hg debugrebuilddirstate;\
+           hg tag -l --remove ccommit-parent
+
+crecord = !hg cclean;\
+           hg record "$@";\
+           hg tag -fl ccommit-parent;\
+           hg crestore;\
+           hg debugsetparents ccommit-parent;\
+           hg debugrebuilddirstate;\
            hg tag -l --remove ccommit-parent
