@@ -24,6 +24,8 @@ import notebook
 import warnings
 
 _HERE = os.path.abspath(os.path.dirname(__file__))
+_DATA = os.path.join(_HERE, '_data')
+_NBTHEMES = os.path.join(_DATA, 'nbthemes')
 
 
 class ExtensionManager(object):
@@ -109,15 +111,15 @@ def nbinit(theme='mmf', toggle_code=False):
     install_extensions()
     clear_output()
     with open(os.path.join(
-            _HERE, 'themes', '{theme}.css'.format(theme=theme))) as _f:
+            _NBTHEMES, '{theme}.css'.format(theme=theme))) as _f:
         display(HTML(r"<style>{}</style>".format(_f.read())))
 
     with open(os.path.join(
-            _HERE, 'themes', '{theme}.js'.format(theme=theme))) as _f:
+            _NBTHEMES, '{theme}.js'.format(theme=theme))) as _f:
         display(Javascript(_f.read()))
 
     with open(os.path.join(
-            _HERE, 'themes', '{theme}.html'.format(theme=theme))) as _f:
+            _NBTHEMES, '{theme}.html'.format(theme=theme))) as _f:
         display(HTML(_f.read()))
 
     if toggle_code:
