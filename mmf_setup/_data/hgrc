@@ -26,30 +26,134 @@ lga = glog --style=${MMF_SETUP}/_data/hgthemes/map-cmdline.lg -l20
 
 # This version will not run commit hooks
 _commit = commit
-cclean = !hg tag -fl cstatus_parent;\
-          hg _commit -qm "CHK: cstatus checkpoint";\
-          hg tag -fl cstatus_checkpoint;\
-          hg debugsetparents cstatus_parent; hg debugrebuilddirstate;\
-          hg status -man0 | xargs -0 nbstripout
 
-crestore = !hg update -C cstatus_checkpoint;\
-            hg debugsetparents cstatus_parent; hg debugrebuilddirstate;\
-            hg strip cstatus_checkpoint --no-backup;\
-            hg tag -l --remove cstatus_parent
+# Sets the parent without changing local files
+_setparent = !hg debugsetparents "$@" && hg debugrebuilddirstate
 
-cstatus = !hg cclean; hg status "$@"; hg crestore
-cdiff   = !hg cclean; hg diff   "$@"; hg crestore
-cediff  = !hg cclean; hg ediff  "$@"; hg crestore
-ccommit = !hg cclean; hg commit "$@";
-           hg tag -fl ccommit-parent;\
-           hg crestore;\
-           hg debugsetparents ccommit-parent; hg debugrebuilddirstate;\
-           hg _commit -qm "OUT: Automatic commit of output";\
-           hg debugsetparents ccommit-parent; hg debugrebuilddirstate;\
-           hg tag -l --remove ccommit-parent
+# Creates a checkpoint of the current set of files.  If there are
+# changes, then this is a new commit, otherwise it simply refers to
+# the existing node. The following tags are set:
+#
+#   _c_chk: Points to the node that represents the current
+#           state of the working copy.  This may or may not be a new
+#           node depending on whether or not the working copy differs
+#           from the parent.   The creation of this tag is chained
+#           with ";" so it always gets created.
+#   _c_new: This is created iff a new node is created for the
+#           checkpoint.  This new node should be stripped later.  Note
+#           that the creation of this tag is chained with the _commit
+#           command using "&&" so it only is created if _commit succeds
+#           and actually creates a new node.
+_ccheckpoint = !{
+    hg _commit -qm "CHK: auto checkpoint"  && hg tag -fl _c_new 2> /dev/null
+    hg tag -qfl _c_chk 2> /dev/null
+  }
 
-crecord = !hg cclean; hg record "$@";\
-           hg tag -fl ccommit-parent;\
-           hg crestore;\
-           hg debugsetparents ccommit-parent; hg debugrebuilddirstate;\
-           hg tag -l --remove ccommit-parent
+_crestore = !{
+    hg revert --all -qCr _c_chk 2> /dev/null
+    hg strip _c_new --no-backup 2> /dev/null
+    hg tag -ql --remove _c_chk 2> /dev/null
+  }
+
+cclean = !{
+    echo "cleaning output"
+    PARENT=$(hg id -i) && PARENT=${PARENT:0:12}
+    hg _ccheckpoint
+    hg update -qC $PARENT
+    hg tag -qfl _c_parent 2> /dev/null
+    hg revert --all -qCr _c_chk  2> /dev/null
+    hg status -man0 | xargs -0 nbstripout
+  }
+
+crestore = !{
+    echo "restoring output"
+    # Use update here to get back to the correct branch!
+    hg update -qC _c_parent 2> /dev/null
+    hg _crestore
+    hg _setparent _c_parent 2> /dev/null
+    hg tag -l --remove _c_parent 2> /dev/null
+  }
+
+cstatus = !hg cclean && { hg status "$@"; hg crestore; }
+cdiff   = !hg cclean && { hg diff   "$@"; hg crestore; }
+cediff  = !hg cclean && { hg ediff  "$@"; hg crestore; }
+ccommit = !hg cclean && {
+    hg summary | grep -q 'commit: (clean)' && {
+        # Do this if there is nothing clean to commit... we still try
+        # to commit the output.
+        hg commit "$@"
+        hg tag -fl ccommit-parent 2> /dev/null
+        hg crestore
+        hg _setparent ccommit-parent 2> /dev/null
+        hg _commit -qm "...: Automatic commit with .ipynb output"
+        hg _setparent ccommit-parent 2> /dev/null
+        hg tag -l --remove ccommit-parent 2> /dev/null
+    } || {
+        # Do this if there is something to commit
+        hg commit "$@" && {
+            # Only commit the output if the commit was a succes.
+            # For example, we fail if the user aborts the commit message.
+            hg tag -fl ccommit-parent 2> /dev/null
+            hg crestore
+            hg _setparent ccommit-parent 2> /dev/null
+            hg _commit -qm "...: Automatic commit with .ipynb output"
+            hg _setparent ccommit-parent 2> /dev/null
+            hg tag -l --remove ccommit-parent 2> /dev/null
+        } || {
+            hg crestore
+        }
+    }
+  }
+
+crecord = !hg cclean && {
+    hg record "$@"
+    hg tag -fl _c_parent 2> /dev/null
+    hg crestore
+    hg _setparent _c_parent 2> /dev/null
+    hg tag -l --remove _c_parent 2> /dev/null
+  }
+
+
+# These versions force all of the automatic output onto the auto_output branch.
+_ccommit_output = !{
+    hg tag -fl _c_parent 2> /dev/null
+    hg revert --all -qCr _c_chk  2> /dev/null
+    hg summary | grep -q 'commit: (clean)' && {
+        echo "no output to commit"
+    } || {
+        hg update -qC auto_output 2> /dev/null && {
+            # Before merging, check if there are differences!
+            hg revert --all -qCr _c_chk  2> /dev/null
+            hg summary | grep -q 'commit: (clean)' || {
+                # Only merge if there are changes!
+                hg update -qC _c_chk  # Makes sure any files are added then removed
+                hg update -qC auto_output
+                hg merge -q _c_parent --tool :other 2> /dev/null
+                # We do this twice because of a strange bug that removes files!
+                hg revert --all -qCr _c_chk  2> /dev/null
+                hg revert --all -qCr _c_chk  2> /dev/null
+                echo "automatic commit of output"
+                hg _commit -qm "...: Automatic commit with .ipynb output"
+            }
+        } || {
+            # No auto_output branch exists yet.
+            hg _setparent _c_parent 2> /dev/null
+            hg branch auto_output
+            echo "automatic commit of output"
+            hg _commit -qm "...: Automatic commit with .ipynb output"
+        }
+    }
+  }
+
+ccommit = !hg cclean && {
+    hg summary | grep -q 'commit: (clean)' && {
+        # Do this if there is nothing clean to commit... we still try
+        # to commit to get the message, but always commit the output
+        hg commit "$@"; hg _ccommit_output
+    } || {
+        # Do this if there is something to commit... only commit the
+        # output if the clean commit succeeds.
+        hg commit "$@" && hg _ccommit_output
+    }
+    hg crestore
+  }
