@@ -16,7 +16,7 @@ from setuptools.command.test import test as original_test
 
 NAME = "mmf_setup"
 
-install_requires = ['nbstripout>=0.1.2']
+install_requires = ['nbstripout>=0.2.0']
 test_requires = []
 
 # Get the long description from the README.rst file

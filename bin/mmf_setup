@@ -6,9 +6,7 @@ function usage() {
     echo "  -v : show variables that are set"
     echo
 }
-# Ensure that this script is sourced, not executed
-# Also note that errors are ignored as `activate foo` doesn't generate a bad
-# value for $0 which would cause errors.
+
 for i in "$@"
 do
     case $i in
@@ -19,15 +17,15 @@ do
         *)
             usage
             exit 1
-      ;;
-  esac
-  shift # past argument=value
+            ;;
+    esac
+    shift # move to the next argument
 done
 
+# Ensure that this script is sourced, not executed
 if [[ -n $BASH_VERSION ]] && [[ "$(basename "$0" 2> /dev/null)" == "mmf_setup" ]];
 then
-    >&2 echo "Error: mmf_setup must be sourced. Run 'source mmf_setup' or '. mmf_setup' instead of 'mmf_setup'
-"
+    >&2 echo "Error: mmf_setup must be sourced. Run 'source mmf_setup' or '. mmf_setup' instead of 'mmf_setup'"
     usage
     exit 1
 fi
