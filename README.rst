@@ -129,7 +129,7 @@ In particular, I structure it for the following use-cases:
    specify different themes. (Presently only ``theme='default'`` and
    ``theme='mmf'`` are supported.)
 
-3. To use the shell tools, source the ``mmf_setup`` file:
+3. To use the mercurial shell tools, source the ``mmf_setup`` file:
 
     ``. mmf_setup``
 
