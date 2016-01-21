@@ -8,6 +8,7 @@ histedit=
 rebase=
 record=
 shelve=
+strip=
 mmf_setup.nbclean=$MMF_SETUP/nbclean.py
 
 [hooks]
@@ -47,33 +48,40 @@ _setparent = !hg debugsetparents "$@" && hg debugrebuilddirstate
 #           command using "&&" so it only is created if _commit succeds
 #           and actually creates a new node.
 _ccheckpoint = !{
+    hg bookmarks -i _c_parent
     hg _commit -qm "CHK: auto checkpoint"  && hg tag -fl _c_new 2> /dev/null
-    hg tag -qfl _c_chk 2> /dev/null
+    hg bookmarks -i _c_chk
   }
 
 _crestore = !{
-    hg revert --all -qCr _c_chk 2> /dev/null
-    hg strip _c_new --no-backup 2> /dev/null
-    hg tag -ql --remove _c_chk 2> /dev/null
-  }
-
-cclean = !{
-    echo "cleaning output"
-    PARENT=$(hg id -i) && PARENT=${PARENT:0:12}
-    hg _ccheckpoint
-    hg update -qC $PARENT
-    hg tag -qfl _c_parent 2> /dev/null
-    hg revert --all -qCr _c_chk  2> /dev/null
-    hg status -man0 | xargs -0 nbstripout
-  }
-
-crestore = !{
     echo "restoring output"
     # Use update here to get back to the correct branch!
     hg update -qC _c_parent 2> /dev/null
-    hg _crestore
-    hg _setparent _c_parent 2> /dev/null
-    hg tag -l --remove _c_parent 2> /dev/null
+    hg revert --all -qCr _c_chk 2> /dev/null
+    hg strip _c_new --no-backup 2> /dev/null
+    hg bookmark --delete _c_parent
+    hg bookmark --delete _c_chk
+  }
+
+# These are from the extension
+ccheckpoint = checkpoint
+crestore = restore
+
+# These are defined above
+ccheckpoint = _ccheckpoint
+crestore = _crestore
+
+
+
+cclean = !{
+    echo "cleaning output"
+    # This convoluted arrangement of getting the parent ID allows
+    # cclean to work with the null node as a parent (i.e. with a clean
+    # repo.)  In this case, one cannot add a tag.
+    hg ccheckpoint
+    hg update -qC _c_parent 2> /dev/null
+    hg revert --all -qCr _c_chk  2> /dev/null
+    hg status -man0 | xargs -0 nbstripout
   }
 
 cstatus = !hg cclean && { hg status "$@"; hg crestore; }
@@ -109,6 +117,7 @@ ccommit = !hg cclean && {
 
 crecord = !hg cclean && {
     hg record "$@"
+    hg bookmark --delete _c_parent
     hg tag -fl _c_parent 2> /dev/null
     hg crestore
     hg _setparent _c_parent 2> /dev/null
@@ -118,7 +127,7 @@ crecord = !hg cclean && {
 
 # These versions force all of the automatic output onto the auto_output branch.
 _ccommit_output = !{
-    hg tag -fl _c_parent 2> /dev/null
+    hg bookmarks -i _c_parent
     hg revert --all -qCr _c_chk  2> /dev/null
     hg summary | grep -q 'commit: (clean)' && {
         echo "no output to commit"

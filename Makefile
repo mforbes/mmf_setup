@@ -12,7 +12,7 @@ help:
 	@echo '  test-all - also run blacklisted tests'
 
 test:
-	cd tests && $(PYTHON) run-tests.py --blacklist=BLACKLIST --with-hg=$(HG) $(TESTFLAGS)
+	cd tests && $(PYTHON) run-tests.py -f --blacklist=BLACKLIST --with-hg=$(HG) $(TESTFLAGS)
 
 test-all:
 	cd tests && $(PYTHON) run-tests.py --with-hg=$(HG) $(TESTFLAGS)
