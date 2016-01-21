@@ -1,4 +1,5 @@
 [ui]
+ccommit.verbose=true
 
 [extensions]
 color=
@@ -7,6 +8,7 @@ histedit=
 rebase=
 record=
 shelve=
+mmf_setup.nbclean=$MMF_SETUP/nbclean.py
 
 [hooks]
 # This hook adds "%include ../.hgrc" to .hg/hgrc if the .hgrc file exists in
