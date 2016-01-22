@@ -3,7 +3,8 @@
 makefiles_dir = .makefiles
 include $(makefiles_dir)/rst2html.mk
 
-PYTHON=/data/apps/anaconda/bin/python
+# This gets the version of python that mercurial uses
+PYTHON="$$(shebang=$$(head -n1 $$(type -p hg));echo $${shebang:2})"
 HG=`which hg`
 
 help:
