@@ -29,7 +29,7 @@ with open(os.path.join(_HERE, 'README.rst')) as _f:
 
 
 setup(name=NAME,
-      version='0.1.4',
+      version='0.1.5',
       packages=find_packages(exclude=['tests']),
 
       install_requires=install_requires,
