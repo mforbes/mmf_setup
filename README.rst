@@ -129,13 +129,25 @@ In particular, I structure it for the following use-cases:
    specify different themes. (Presently only ``theme='default'`` and
    ``theme='mmf'`` are supported.)
 
-3. To use the mercurial shell tools, source the ``mmf_setup`` file:
+3. To use the mercurial notebook cleaning tools, simply source the
+   ``mmf_setup`` script::
 
-    ``. mmf_setup``
+      . mmf_setup -v
 
-    This will add a custom ``hgrc`` file to your ``HGRCPATH`` which
-    provides commands for committing clean notebooks such as ``hg
-    ccommit`` and ``hg cstatus``.
+   To do this automatically when you login, add this line to your
+   ``~/.bashc`` or ``~/.bash_profile`` scripts.  These can also be
+   enabled manually by adding the following to your ``~/.hgrc`` file::
+
+     [extensions]
+     strip=
+     mmf_setup.nbclean=$MMF_UTILS/nbclean.py
+
+
+   where ``$MMF_UTILS`` expands to the install location for the
+   package (which can be seen by running ``mmf_setup -v``).
+
+   This will provide commands for committing clean notebooks such as
+   ``hg cstatus``, ``hg cdiff`` and ``hg ccommit``.
 
 
 ==================
@@ -172,10 +184,55 @@ then your ``HGRCPATH`` will be amended to include this projects
      full output.
    * ``hg ccommit`` (or ``hg ccom``): same for ``hg com`` but also
      commits the full version of the notebooks with output as a new
-     node off the present node with the message ``OUT: Automatic commit of
-     output``.  The files in the repository will be left with the
-     clean commit as the parent so this output commit will be dangling
-     unless you want to include it.
+     node off the present node with the message ``..: Automatic commit of
+     output``.  This command has two behaviours depending on the
+     configuration option ``nbclean.output_branch``.  If this is not
+     set::
+
+       [nbclean]
+       output_branch =
+
+     then ``hg ccommit`` will commit a cleaned copy of your notebooks
+     with the output stripped, and then will commit the full notebook
+     with output (provided that the notebooks have output) as a new
+     head::
+
+       | o  4: test ...: Automatic commit with .ipynb output
+       |/
+       @  3: test ccommit 3
+       |
+       | o  2: test ...: Automatic commit with .ipynb output
+       |/
+       o  1: test ccommit 1
+       |
+       o  0: test commit 0
+
+     The parent will always be set to the clean node so that the output
+     commits can be safely stripped from your repository if you choose
+     not to keep them.
+
+     The other mode of operation can be enabled by specifying a name for
+     the output branch::
+
+       [nbclean]
+       output_branch = auto_output
+
+     This will merge the changes into a branch with the specified name::
+
+       | o  4: test ...: Automatic commit with .ipynb output (...) auto_output
+       |/|
+       @ |  3: test ccommit 3
+       | |
+       | o  2: test ...: Automatic commit with .ipynb output (...) auto_output
+       |/
+       o  1: test ccommit 1
+       |
+       o  0: test commit 0
+
+     This facilitates stripping the output ``hg strip 2`` for example
+     will remove all output.  It also allows you to track the changes in
+     the output.
+
 
 Developer Notes
 ---------------

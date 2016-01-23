@@ -23,19 +23,4 @@ update = if [ -e .hgrc ] && touch .hg/hgrc \
 [alias]
 lga = glog --style=${MMF_SETUP}/_data/hgthemes/map-cmdline.lg -l20
 
-# The following provide options for commiting only clean versions of
-# jupyter notebooks.  They require the nbstripout package:
-# pip install --index-url=https://bitbucket.org/mforbes/mypi/ nbstripout
-
-
-#cstatus = !hg nbclean && { hg status "$@"; hg nbrestore; }
-#cdiff   = !hg nbclean && { hg diff   "$@"; hg nbrestore; }
 cediff  = !hg nbclean && { hg ediff  "$@"; hg nbrestore; }
-crecord = !hg nbclean && {
-    hg record "$@"
-    hg bookmark --delete _c_parent
-    hg tag -fl _c_parent 2> /dev/null
-    hg nbrestore
-    hg _setparent _c_parent 2> /dev/null
-    hg tag -l --remove _c_parent 2> /dev/null
-  }
