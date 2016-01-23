@@ -1,14 +1,12 @@
   $ cat <<EOF >> $HGRCPATH
   > [extensions]
   > graphlog =
-  > mmf_setup.nbclean = $MMF_SETUP/nbclean.py
-  > strip =
-  > [alias]
-  > lga = glog --style=${MMF_SETUP}/_data/hgthemes/map-cmdline.lg -l20
-  > [nbclean]
-  > output_branch =
   > [defaults]
   > ccommit = -d "0 0"
+  > %include $MMF_SETUP/_data/nbclean.hgrc
+  > [alias]
+  > lga = glog --style=${MMF_SETUP}/_data/hgthemes/map-cmdline.lg -l20
+  > _ccommit_output = _ccommit_output_branch
   > EOF
 
 Test that nothing happens with a clean and completely empty repository:
@@ -52,6 +50,7 @@ Now do a more comprehensive test:
   
 
 
+
   $ cp ${TESTDIR}/_data/n1_clean.ipynb N.ipynb
   $ hg cst
   cleaning output
@@ -67,6 +66,7 @@ Now do a more comprehensive test:
   |
   o  0:d test 0 (1970-01-01)
   
+
 
 
   $ cp ${TESTDIR}/_data/n1_dirty.ipynb N.ipynb
@@ -86,15 +86,18 @@ the automatic output commit will appear.
   $ hg ccom -m '1'
   cleaning output
   nothing changed
+  marked working directory as branch auto_output
+  (branches are permanent and global, did you want a bookmark?)
   automatic commit of output
   restoring output
   $ hg lg
-  o  2:d test ...: Automatic commit with .ipynb output (* ago)  tip (glob)
+  o  2:d test ...: Automatic commit with .ipynb output (* ago) auto_output tip (glob)
   |
   @  1:d test 1 (1970-01-01)
   |
   o  0:d test 0 (1970-01-01)
   
+
 
 
 
@@ -105,7 +108,6 @@ Commit a dirty notebook
   $ cp ${TESTDIR}/_data/n1_dirty.ipynb N1.ipynb
   $ hg add N1.ipynb
   $ hg com N1.ipynb -m '3: N1'
-  created new head
   $ hg st
   M N.ipynb
   $ hg cst
@@ -151,13 +153,13 @@ was the source of failure for issue #2
   cleaning output
   restoring output
   $ hg lg
-  o  5:d test ...: Automatic commit with .ipynb output (* ago)  tip (glob)
-  |
-  o  4:d test 4: N2 (1970-01-01)
-  |
-  o  3:d test 3: N1 (1970-01-01)
-  |
-  | o  2:d test ...: Automatic commit with .ipynb output (* ago) (glob)
+  o    5:d test ...: Automatic commit with .ipynb output (* ago) auto_output tip (glob)
+  |\
+  | o  4:d test 4: N2 (1970-01-01)
+  | |
+  | o  3:d test 3: N1 (1970-01-01)
+  | |
+  o |  2:d test ...: Automatic commit with .ipynb output (* ago) auto_output (glob)
   |/
   @  1:d test 1 (1970-01-01)
   |

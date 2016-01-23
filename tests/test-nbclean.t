@@ -1,12 +1,14 @@
   $ cat <<EOF >> $HGRCPATH
   > [extensions]
+  > graphlog =
   > mmf_setup.nbclean = $MMF_SETUP/nbclean.py
   > strip =
+  > [alias]
+  > lga = glog --style=${MMF_SETUP}/_data/hgthemes/map-cmdline.lg -l20
   > [nbclean]
   > output_branch = auto_output
   > [defaults]
   > ccommit = -d "0 0"
-  > %include $MMF_SETUP/_data/hgrc
   > EOF
 
 Test that nothing happens with a clean and completely empty repository:
@@ -50,6 +52,7 @@ Now do a more comprehensive test:
   
 
 
+
   $ cp ${TESTDIR}/_data/n1_clean.ipynb N.ipynb
   $ hg cst
   cleaning output
@@ -65,6 +68,7 @@ Now do a more comprehensive test:
   |
   o  0:d test 0 (1970-01-01)
   
+
 
 
   $ cp ${TESTDIR}/_data/n1_dirty.ipynb N.ipynb
@@ -94,6 +98,7 @@ the automatic output commit will appear.
   |
   o  0:d test 0 (1970-01-01)
   
+
 
 
 

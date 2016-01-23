@@ -49,7 +49,7 @@ setup(name=NAME,
       description="Python Tools",
       long_description=LONG_DESCRIPTION,
 
-      license='GPL',
+      license='GNU GPLv2 or any later version',
 
       classifiers=[
           # How mature is this project? Common values are

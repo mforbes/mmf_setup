@@ -421,6 +421,45 @@ class NBClean(object):
             sys.argv = _argv
         return True
 
+    def commit_output(self, branch):
+        """Commit the output to the specified branch."""
+        if not branch:
+            branch = self.config('output_branch')
+        if branch:
+            self.bookmark(self.tags['parent'])
+            self.revert(self.tags['checkpoint'])
+            if self.isclean():
+                self.msg("no output to commit")
+            else:
+                if self.update(branch):
+                    # Before merging, check if there are differences!
+                    self.revert(self.tags['checkpoint'])
+                    if not self.isclean():
+                        # Only merge if there are changes!
+                        self.automerge(src=self.tags['parent'],
+                                       dest=branch,
+                                       checkpoint=self.tags['checkpoint'])
+                        self.msg("automatic commit of output")
+                        self.quiet_commit(
+                            "...: Automatic commit with .ipynb output")
+                else:
+                    # No auto_output branch exists yet.
+                    self.setparent('c_parent', ferr=False)
+                    self.branch(branch)
+                    self.msg("automatic commit of output")
+                    self.quiet_commit(
+                        "...: Automatic commit with .ipynb output")
+        else:
+            self.bookmark(self.tags['parent'])
+            self.revert(self.tags['checkpoint'])
+            self.revert(self.tags['checkpoint'])
+
+            if self.quiet_commit(
+                    "...: Automatic commit with .ipynb output"):
+                self.msg("automatic commit of output")
+            else:
+                self.msg("no output to commit")
+
     ######################################################################
     # External Interface
     #
@@ -450,42 +489,20 @@ class NBClean(object):
             isclean = (ret is None)
 
         if isclean:
-            if not branch:
-                branch = self.config('output_branch')
-            if branch:
-                self.bookmark(self.tags['parent'])
-                self.revert(self.tags['checkpoint'])
-                if self.isclean():
-                    self.msg("no output to commit")
-                else:
-                    if self.update(branch):
-                        # Before merging, check if there are differences!
-                        self.revert(self.tags['checkpoint'])
-                        if not self.isclean():
-                            # Only merge if there are changes!
-                            self.automerge(src=self.tags['parent'],
-                                           dest=branch,
-                                           checkpoint=self.tags['checkpoint'])
-                            self.msg("automatic commit of output")
-                            self.quiet_commit(
-                                "...: Automatic commit with .ipynb output")
-                    else:
-                        # No auto_output branch exists yet.
-                        self.setparent('c_parent', ferr=False)
-                        self.branch(branch)
-                        self.msg("automatic commit of output")
-                        self.quiet_commit(
-                            "...: Automatic commit with .ipynb output")
-            else:
-                self.bookmark(self.tags['parent'])
-                self.revert(self.tags['checkpoint'])
-                self.revert(self.tags['checkpoint'])
+            self.commit_output(branch)
 
-                if self.quiet_commit(
-                        "...: Automatic commit with .ipynb output"):
-                    self.msg("automatic commit of output")
-                else:
-                    self.msg("no output to commit")
+        self.nbrestore()
+
+    @_cmd(opts=[
+        ('b', 'branch', '',
+         _('commit output to this branch (create if needed)'))])
+    def crecord(self, branch, *pats, **opts):
+        self.nbclean()
+        isclean = self.isclean()
+        if isclean:
+            self.msg("nothing changed")
+        else:
+            self.dispatch('record')
 
         self.nbrestore()
 

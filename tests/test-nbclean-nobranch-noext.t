@@ -1,14 +1,12 @@
   $ cat <<EOF >> $HGRCPATH
   > [extensions]
   > graphlog =
-  > mmf_setup.nbclean = $MMF_SETUP/nbclean.py
-  > strip =
-  > [alias]
-  > lga = glog --style=${MMF_SETUP}/_data/hgthemes/map-cmdline.lg -l20
-  > [nbclean]
-  > output_branch =
   > [defaults]
   > ccommit = -d "0 0"
+  > %include $MMF_SETUP/_data/nbclean.hgrc
+  > [alias]
+  > lga = glog --style=${MMF_SETUP}/_data/hgthemes/map-cmdline.lg -l20
+  > _ccommit_output = _ccommit_output_nobranch
   > EOF
 
 Test that nothing happens with a clean and completely empty repository:
