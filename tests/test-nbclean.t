@@ -1,14 +1,7 @@
   $ cat <<EOF >> $HGRCPATH
-  > [extensions]
-  > graphlog =
-  > mmf_setup.nbclean = $MMF_SETUP/nbclean.py
-  > strip =
-  > [alias]
-  > lga = glog --style=${MMF_SETUP}/_data/hgthemes/map-cmdline.lg -l20
+  > %include $TESTDIR/hgrc
   > [nbclean]
   > output_branch = auto_output
-  > [defaults]
-  > ccommit = -d "0 0"
   > EOF
 
 Test that nothing happens with a clean and completely empty repository:
@@ -37,37 +30,51 @@ Now do a more comprehensive test:
   $ hg add N.ipynb
   $ hg cst
   cleaning output
+  cleaning N.ipynb
   A N.ipynb
   restoring output
   $ hg ccom -m '0'
   cleaning output
+  cleaning N.ipynb
   created new head
   no output to commit
   restoring output
   $ hg cst
   cleaning output
   restoring output
-  $ hg lg
-  @  0:d test 0 (1970-01-01)  tip
+  $ hg glog
+  @  0: test 0 (1970-01-01)   tip
   
+
+
+
+
+
 
 
 
   $ cp ${TESTDIR}/_data/n1_clean.ipynb N.ipynb
   $ hg cst
   cleaning output
+  cleaning N.ipynb
   M N.ipynb
   restoring output
   $ hg ccom -m '1'
   cleaning output
+  cleaning N.ipynb
   created new head
   no output to commit
   restoring output
-  $ hg lg
-  @  1:d test 1 (1970-01-01)  tip
+  $ hg glog
+  @  1: test 1 (1970-01-01)   tip
   |
-  o  0:d test 0 (1970-01-01)
+  o  0: test 0 (1970-01-01)
   
+
+
+
+
+
 
 
 
@@ -76,9 +83,11 @@ Now do a more comprehensive test:
   M N.ipynb
   $ hg cst
   cleaning output
+  cleaning N.ipynb
   restoring output
   $ hg cdiff
   cleaning output
+  cleaning N.ipynb
   restoring output
   $ hg st
   M N.ipynb
@@ -87,17 +96,23 @@ the automatic output commit will appear.
 
   $ hg ccom -m '1'
   cleaning output
+  cleaning N.ipynb
   nothing changed
   marked working directory as branch auto_output
   automatic commit of output
   restoring output
-  $ hg lg
-  o  2:d test ...: Automatic commit with .ipynb output (* ago) auto_output tip (glob)
+  $ hg glog
+  o  2: test ...: Automatic commit with .ipynb output (*) auto_output  tip (glob)
   |
-  @  1:d test 1 (1970-01-01)
+  @  1: test 1 (1970-01-01)
   |
-  o  0:d test 0 (1970-01-01)
+  o  0: test 0 (1970-01-01)
   
+
+
+
+
+
 
 
 
@@ -113,12 +128,14 @@ Commit a dirty notebook
   M N.ipynb
   $ hg cst
   cleaning output
+  cleaning N.ipynb
   M N.ipynb
   restoring output
   $ hg cdiff
   cleaning output
+  cleaning N.ipynb
   diff -r * N.ipynb (glob)
-  --- a/N.ipynb	* (glob)
+  --- a/N.ipynb	Thu Jan 01 00:00:00 1970 +0000
   +++ b/N.ipynb	* (glob)
   @@ -17,6 +17,17 @@
       "source": [
@@ -141,6 +158,7 @@ Commit a dirty notebook
   restoring output
   $ hg ccom -m '4: N2'
   cleaning output
+  cleaning N.ipynb
   created new head
   automatic commit of output
   restoring output
@@ -153,16 +171,16 @@ was the source of failure for issue #2
   $ hg cst
   cleaning output
   restoring output
-  $ hg lg
-  o    5:d test ...: Automatic commit with .ipynb output (* ago) auto_output tip (glob)
+  $ hg glog
+  o    5: test ...: Automatic commit with .ipynb output (*) auto_output  tip (glob)
   |\
-  | o  4:d test 4: N2 (1970-01-01)
+  | o  4: test 4: N2 (1970-01-01)
   | |
-  | o  3:d test 3: N1 (1970-01-01)
+  | o  3: test 3: N1 (1970-01-01)
   | |
-  o |  2:d test ...: Automatic commit with .ipynb output (* ago) auto_output (glob)
+  o |  2: test ...: Automatic commit with .ipynb output (*) auto_output (glob)
   |/
-  @  1:d test 1 (1970-01-01)
+  @  1: test 1 (1970-01-01)
   |
-  o  0:d test 0 (1970-01-01)
+  o  0: test 0 (1970-01-01)
   
