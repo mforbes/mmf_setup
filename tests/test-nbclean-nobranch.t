@@ -63,10 +63,6 @@ Now do a more comprehensive test:
   @  0: test 0 (1970-01-01)   tip
   
 
-
-
-
-
   $ cp ${TESTDIR}/_data/n1_clean.ipynb N.ipynb
   $ hg cst
   cleaning output
@@ -85,10 +81,6 @@ Now do a more comprehensive test:
   o  0: test 0 (1970-01-01)
   
 
-
-
-
-
   $ cp ${TESTDIR}/_data/n1_dirty.ipynb N.ipynb
   $ hg st
   M N.ipynb
@@ -102,7 +94,8 @@ Now do a more comprehensive test:
   restoring output
   $ hg st
   M N.ipynb
-One can try to commit the dirty notebook.  Nothing hasmchanged, but
+
+One can try to commit the dirty notebook.  Nothing has changed, but
 the automatic output commit will appear.
 
   $ hg ccom -m '1'
@@ -118,11 +111,6 @@ the automatic output commit will appear.
   |
   o  0: test 0 (1970-01-01)
   
-
-
-
-
-
 
   $ cp ${TESTDIR}/_data/n2_dirty.ipynb N.ipynb
 
@@ -189,6 +177,54 @@ was the source of failure for issue #2
   | o  2: test ...: Automatic commit with .ipynb output (*) (glob)
   |/
   @  1: test 1 (1970-01-01)
+  |
+  o  0: test 0 (1970-01-01)
+  
+
+Now update to revision 4 with the output from 5.
+
+  $ hg update 4
+  2 files updated, 0 files merged, 0 files removed, 0 files unresolved
+  $ hg st
+  $ hg cst
+  cleaning output
+  restoring output
+  $ hg glog
+  o  5: test ...: Automatic commit with .ipynb output (*)   tip (glob)
+  |
+  @  4: test 4: N2 (1970-01-01)
+  |
+  o  3: test 3: N1 (1970-01-01)
+  |
+  | o  2: test ...: Automatic commit with .ipynb output (*) (glob)
+  |/
+  o  1: test 1 (1970-01-01)
+  |
+  o  0: test 0 (1970-01-01)
+  
+
+
+  $ hg cupdate 4
+  0 files updated, 0 files merged, 0 files removed, 0 files unresolved
+  updating notebook outputs
+  1 files updated, 0 files merged, 0 files removed, 0 files unresolved
+  $ hg st
+  M N.ipynb
+  $ hg diff -r 5
+  $ hg cst
+  cleaning output
+  cleaning N.ipynb
+  restoring output
+  $ hg glog
+  o  5: test ...: Automatic commit with .ipynb output (*)   tip (glob)
+  |
+  @  4: test 4: N2 (1970-01-01)
+  |
+  o  3: test 3: N1 (1970-01-01)
+  |
+  | o  2: test ...: Automatic commit with .ipynb output (*) (glob)
+  |/
+  o  1: test 1 (1970-01-01)
   |
   o  0: test 0 (1970-01-01)
   

@@ -42,6 +42,7 @@ API vs hglib: This code contains two paths of execution.  One use the
 from contextlib import contextmanager
 import functools
 import inspect
+import operator
 import os
 import shlex
 import sys
@@ -63,7 +64,7 @@ testedwith = '3.6.3'
 ######################################################################
 # Helpers
 _COMMANDS = []
-
+_AUTOCOMMIT_MESSAGE = "...: Automatic commit with .ipynb output"
 
 API = False
 
@@ -299,10 +300,17 @@ class NBClean(object):
             return not self.client.revert(
                 files, rev=rev, all=all, nobackup=nobackup)
 
-    def update(self, rev, clean=True):
+    def identify(self):
+        """Return the revision number of the parent node."""
+        if API:
+            raise NotImplementedError
+        else:
+            return self.client.identify(id=True)[:12]
+
+    def update(self, rev, clean=True, quiet=True):
         """Update (clean by default) quietly"""
         if True or API:
-            opts = ['-q']
+            opts = ['-q'] if quiet else []
             if clean:
                 opts.append('-C')
             return self.dispatch('update {} {}'
@@ -310,7 +318,13 @@ class NBClean(object):
                                  ferr=False)
         else:
             try:
-                result = not self.client.update(rev, clean=clean)
+                res = self.client.update(rev, clean=clean)
+                if not quiet:
+                    self.msg(", ".join("{} files updated",
+                                       "{} files merged",
+                                       "{} files removed",
+                                       "{} files unresolved").format(*res))
+                result = True
             except hglib.error.CommandError:
                 result = False
             return result
@@ -536,22 +550,19 @@ class NBClean(object):
                                        dest=branch,
                                        checkpoint=self.tags['checkpoint'])
                         self.msg("automatic commit of output")
-                        self.quiet_commit(
-                            "...: Automatic commit with .ipynb output")
+                        self.quiet_commit(_AUTOCOMMIT_MESSAGE)
                 else:
                     # No auto_output branch exists yet.
                     self.setparent('c_parent', ferr=False)
                     self.branch(branch)
                     self.msg("automatic commit of output")
-                    self.quiet_commit(
-                        "...: Automatic commit with .ipynb output")
+                    self.quiet_commit(_AUTOCOMMIT_MESSAGE)
         else:
             self.bookmark(self.tags['parent'])
             self.revert(self.tags['checkpoint'])
             self.revert(self.tags['checkpoint'])
 
-            if self.quiet_commit(
-                    "...: Automatic commit with .ipynb output"):
+            if self.quiet_commit(_AUTOCOMMIT_MESSAGE):
                 self.msg("automatic commit of output")
             else:
                 self.msg("no output to commit")
@@ -592,6 +603,30 @@ class NBClean(object):
 
             if isclean:
                 self.commit_output(branch)
+
+    @_cmd(opts=commands.table['^update|up|checkout|co'][1],
+          synopsis=commands.table['^update|up|checkout|co'][2])
+    def cupdate(self, *pats, **opts):
+        """Like hg update but restore cleaned notebooks with their output.
+
+        This the equivalent to `hg update` followed by `hg revert
+        --all` to the most recent auto-committed child with output.
+        """
+        self.run_with_hooks('update', *pats, **opts)
+        rev = self.identify()
+        auto_commits = sorted([
+            _r for _r in self.client.log('children(.)')
+            if _r[-2] == _AUTOCOMMIT_MESSAGE
+        ], key=operator.attrgetter('date'))
+        if not auto_commits:
+            return
+        self.msg("updating notebook outputs")
+        auto_node = auto_commits[-1].node
+
+        # Do this to get a nice message
+        self.update(rev=auto_node, clean=opts['clean'], quiet=False)
+        self.update(rev=rev, clean=opts['clean'], quiet=True)
+        self.revert(rev=auto_node, all=True, nobackup=True)
 
     @_cmd(opts=[
         ('a', 'clean_all', False,
