@@ -40,10 +40,12 @@ API vs hglib: This code contains two paths of execution.  One use the
       * Cannot be used to define extensions on its own.
 """
 from contextlib import contextmanager
-import os
-import sys
 import functools
+import inspect
+import operator
+import os
 import shlex
+import sys
 
 import hglib
 
@@ -62,9 +64,31 @@ testedwith = '3.6.3'
 ######################################################################
 # Helpers
 _COMMANDS = []
-
+_AUTOCOMMIT_MESSAGE = "...: Automatic commit with .ipynb output"
 
 API = False
+
+
+class Status(object):
+    modified = []
+    added = []
+    removed = []
+    deleted = []
+    unknown = []
+    ignored = []
+    clean = []
+
+
+def cleandoc(doc):
+    """Remove 4 spaces from start of doc. The main point is to remove
+    one level of indentation since we use a class here.
+    """
+    lines = inspect.cleandoc(doc).splitlines()
+    for _n, _line in enumerate(lines):
+        if _n == 0:
+            continue
+        lines[_n] = "    {}".format(_line)
+    return "\n".join(lines)
 
 
 class NBClean(object):
@@ -103,8 +127,8 @@ class NBClean(object):
         self.tags = dict((_t, '_'.join([_prefix, _t])) for _t in _tags)
 
         # Register commands with mercurial
-        for name, opts, synopsis in _COMMANDS:
-            command(name, opts, synopsis)(getattr(self, name))
+        for name, opts, synopsis, kw in _COMMANDS:
+            command(name, opts, synopsis, **kw)(getattr(self, name))
 
     def __del__(self):
         self.devnull.close()
@@ -157,22 +181,23 @@ class NBClean(object):
         # indicating if the command succeded
         return not self.result
 
-    def _cmd(opts=[], synopsis=_('')):
+    def _cmd(opts=[], synopsis=_(''), **kw):
         """Decorator like command that uses the function name and sets
         self.ui, self.repo, and self.client."""
         def wrap(f):
             @functools.wraps(f)
-            def wrapper(self, ui=None, repo=None, **kw):
+            def wrapper(self, ui=None, repo=None, *pats, **opts):
                 if ui is not None:
                     self.ui = ui
                 if repo is not None:
                     self.repo = repo
                 if not self.client and not API:
                     self.client = hglib.open(self.repo.pathto(''))
-                return f(self, **kw)
+                return f(self, *pats, **opts)
 
             name = f.func_name
-            _COMMANDS.append((name, opts, synopsis))
+            _COMMANDS.append((name, opts, synopsis, kw))
+            wrapper.__doc__ = cleandoc(f.__doc__)
             return wrapper
         return wrap
 
@@ -183,6 +208,7 @@ class NBClean(object):
     # exposed to the user.  The default values are different from the
     # usual versions of the commands so that the main part of our code
     # is cleaner.
+
     def msg(self, msg, err=False):
         if API:
             msg = _(msg)        # Internationalization
@@ -196,6 +222,17 @@ class NBClean(object):
     def isquiet(self):
         """Return True if the user has specified the global -q flag."""
         return self.config('quiet', section='ui')
+
+    def status(self, clean=False):
+        if API:
+            status = self.repo.status(clean=clean)
+        else:
+            status = Status()
+            res = self.client.status(added=True, modified=True, clean=True)
+            status.added = [_f for _s, _f in res if _s == 'A']
+            status.clean = [_f for _s, _f in res if _s == 'C']
+            status.modified = [_f for _s, _f in res if _s == 'M']
+        return status
 
     def isclean(self):
         """Return True if the repository is clean.
@@ -235,6 +272,10 @@ class NBClean(object):
         else:
             self.client.bookmark(name, inactive=inactive, delete=delete)
 
+    def bookmarks(self):
+        """Return the set of bookmark names"""
+        return [_b[0] for _b in self.client.bookmarks()[0]]
+
     def strip(self, name, nobackup=True, ferr=False):
         """Force strip a changeset without a backup and suppressing
         the error messages."""
@@ -259,10 +300,17 @@ class NBClean(object):
             return not self.client.revert(
                 files, rev=rev, all=all, nobackup=nobackup)
 
-    def update(self, rev, clean=True):
+    def identify(self):
+        """Return the revision number of the parent node."""
+        if API:
+            raise NotImplementedError
+        else:
+            return self.client.identify(id=True)[:12]
+
+    def update(self, rev, clean=True, quiet=True):
         """Update (clean by default) quietly"""
         if True or API:
-            opts = ['-q']
+            opts = ['-q'] if quiet else []
             if clean:
                 opts.append('-C')
             return self.dispatch('update {} {}'
@@ -270,7 +318,13 @@ class NBClean(object):
                                  ferr=False)
         else:
             try:
-                result = not self.client.update(rev, clean=clean)
+                res = self.client.update(rev, clean=clean)
+                if not quiet:
+                    self.msg(", ".join("{} files updated",
+                                       "{} files merged",
+                                       "{} files removed",
+                                       "{} files unresolved").format(*res))
+                result = True
             except hglib.error.CommandError:
                 result = False
             return result
@@ -326,9 +380,32 @@ class NBClean(object):
         # interface.  We could call self.dispatch('_commit') as an
         # alias here but not self.dispatch('commit') since the latter
         # might call hooks.  We do this so we do not need an alias.
-        with self.suppress_output:
-            res = commands.commit(self.ui, self.repo, message=message)
+        if API:
+            with self.suppress_output:
+                res = commands.commit(self.ui, self.repo,
+                                      message=message)
+        else:
+            try:
+                res = self.client.commit(message=message)
+            except hglib.error.CommandError:
+                res = True
+
         return not res
+
+    def run_with_hooks(self, cmd, *pats, **opts):
+        """Runs the specified command with the pre and post hooks."""
+        fullargs = sys.argv[1:]   # This is a guess...
+        args = " ".join(fullargs)
+
+        hook.hook(self.ui, self.repo, "pre-{}".format(cmd),
+                  True, args=args, pats=pats, opts=opts)
+
+        ret = getattr(commands, cmd)(self.ui, self.repo, *pats, **opts)
+
+        # run post-hook, passing command result
+        hook.hook(self.ui, self.repo, "post-{}".format(cmd),
+                  False,  args=args, result=ret, pats=pats, opts=opts)
+        return ret
 
     def automerge(self, src, dest, checkpoint):
         """Merges revision src onto dest keeping working copy exactly
@@ -360,10 +437,22 @@ class NBClean(object):
         if API:
             return self.ui.config(section, name, default=default)
         else:
+            try:
+                config = self.client.config('nbclean')
+            except hglib.error.CommandError:
+                config = []
+
             res = dict((_key, _value)
                        for _section, _key, _value
-                       in self.client.config('nbclean'))
+                       in config)
             return res.get(name, default)
+
+    @contextmanager
+    def clean_restore(self, **kw):
+        try:
+            yield self.nbclean(**kw)
+        finally:
+            self.nbrestore()
 
     @_cmd()
     def nbrestore(self):
@@ -386,8 +475,11 @@ class NBClean(object):
         self.bookmark(self.tags['parent'], delete=True)
         self.bookmark(self.tags['checkpoint'], delete=True)
 
-    @_cmd()
-    def nbclean(self):
+    @_cmd(opts=[('a', 'clean_all', False,
+                 _('clean all managed .ipynb files')),
+                ('f', 'force', False,
+                 _('force removal of managed bookmarks etc.'))])
+    def nbclean(self, clean_all=False, force=False):
         """Clean output from all added or modified .ipynb notebooks.
 
         See also:
@@ -397,7 +489,8 @@ class NBClean(object):
         #   * Nothing - this is an entrypoint.
         # Postconditions
         #   EITHER
-        #     * raise Abort with no change
+        #     * remove tags and bookmarks (if they were present)
+        #     * raise Abort
         #   OR
         #     * Current state checkpointed in revision with tag 'checkpoint'
         #     * Potentially new checkpoint commit with tag 'checkpoint'
@@ -405,16 +498,33 @@ class NBClean(object):
         #     * Desired parent node has tag 'parent'.  (This might
         #       be the original parent, or might be a new commit.)
 
+        # Remove any old bookmarks first.
+        bookmarks = self.bookmarks()
+        for bookmark in [self.tags['parent'],
+                         self.tags['checkpoint']]:
+            if bookmark in bookmarks:
+                if force:
+                    self.bookmark(bookmark, delete=True)
+                else:
+                    self.msg(
+                        "Aborting... bookmark {} exists! ".format(bookmark) +
+                        "(run 'hg nbclean --force' to force cleaning)",
+                        err=True)
+                    sys.exit(-1)
+
         self.msg("cleaning output")
         self.checkpoint()
         self.update(self.tags['parent'])
         self.revert(self.tags['checkpoint'])
 
         # hg status -man0 | xargs -0 nbstripout
-        status = self.repo.status()
+        status = self.status(clean=clean_all)
         filenames = status.modified + status.added
+        if clean_all:
+            filenames.extend(status.clean)
         notebooks = [_f for _f in filenames if _f.endswith('.ipynb')]
         if notebooks:
+            self.msg('cleaning {}'.format(', '.join(notebooks)))
             _argv = sys.argv
             sys.argv = ['nbstripout'] + notebooks
             nbstripout.main()
@@ -440,22 +550,19 @@ class NBClean(object):
                                        dest=branch,
                                        checkpoint=self.tags['checkpoint'])
                         self.msg("automatic commit of output")
-                        self.quiet_commit(
-                            "...: Automatic commit with .ipynb output")
+                        self.quiet_commit(_AUTOCOMMIT_MESSAGE)
                 else:
                     # No auto_output branch exists yet.
                     self.setparent('c_parent', ferr=False)
                     self.branch(branch)
                     self.msg("automatic commit of output")
-                    self.quiet_commit(
-                        "...: Automatic commit with .ipynb output")
+                    self.quiet_commit(_AUTOCOMMIT_MESSAGE)
         else:
             self.bookmark(self.tags['parent'])
             self.revert(self.tags['checkpoint'])
             self.revert(self.tags['checkpoint'])
 
-            if self.quiet_commit(
-                    "...: Automatic commit with .ipynb output"):
+            if self.quiet_commit(_AUTOCOMMIT_MESSAGE):
                 self.msg("automatic commit of output")
             else:
                 self.msg("no output to commit")
@@ -467,75 +574,110 @@ class NBClean(object):
 
     # Get standard commit options from commands.table
     @_cmd(opts=commands.table['^commit|ci'][1]
-          + [('b', 'branch', '',
+          + [('a', 'clean_all', False,
+              _('clean all managed .ipynb files')),
+             ('b', 'branch', '',
               _('commit output to this branch (create if needed)'))],
-          synopsis=commands.table['^commit|ci'][2])
-    def ccommit(self, branch, *pats, **opts):
-        self.nbclean()
-        isclean = self.isclean()
-        if isclean:
-            self.msg("nothing changed")
-        else:
-            fullargs = sys.argv[1:]   # This is a guess...
-            hook.hook(self.ui, self.repo, "pre-commit", True,
-                      args=" ".join(fullargs),
-                      pats=pats, opts=opts)
-            ret = commands.commit(self.ui, self.repo, *pats, **opts)
-            # run post-hook, passing command result
-            hook.hook(self.ui, self.repo, "post-commit", False,
-                      args=" ".join(fullargs),
-                      result=ret, pats=pats, opts=opts)
+          synopsis=commands.table['^commit|ci'][2],
+          inferrepo=True)
+    def ccommit(self, *pats, **opts):
+        """Clean cleaned notebooks.
 
-            isclean = (ret is None)
+        This will clean all changed and added .ipynb notebooks, then
+        commit them, and finally restore the output.
 
-        if isclean:
-            self.commit_output(branch)
+        The notebooks with output will also be committed to a child
+        node with a message "...: Automatic commit with .ipynb output"
+        that can later be stripped.  If the `--branch` option is used,
+        these automatic commits will be merged into the named branch.
+        """
+        branch = opts.pop('branch')
+        clean_all = opts.pop('clean_all')
+        with self.clean_restore(clean_all=clean_all):
+            isclean = self.isclean()
+            if isclean:
+                self.msg("nothing changed")
+            else:
+                isclean = (
+                    None == self.run_with_hooks('commit', *pats, **opts))
 
-        self.nbrestore()
+            if isclean:
+                self.commit_output(branch)
+
+    @_cmd(opts=commands.table['^update|up|checkout|co'][1],
+          synopsis=commands.table['^update|up|checkout|co'][2])
+    def cupdate(self, *pats, **opts):
+        """Like hg update but restore cleaned notebooks with their output.
+
+        This the equivalent to `hg update` followed by `hg revert
+        --all` to the most recent auto-committed child with output.
+        """
+        self.run_with_hooks('update', *pats, **opts)
+        rev = self.identify()
+        auto_commits = sorted([
+            _r for _r in self.client.log('children(.)')
+            if _r[-2] == _AUTOCOMMIT_MESSAGE
+        ], key=operator.attrgetter('date'))
+        if not auto_commits:
+            return
+        self.msg("updating notebook outputs")
+        auto_node = auto_commits[-1].node
+
+        # Do this to get a nice message
+        self.update(rev=auto_node, clean=opts['clean'], quiet=False)
+        self.update(rev=rev, clean=opts['clean'], quiet=True)
+        self.revert(rev=auto_node, all=True, nobackup=True)
 
     @_cmd(opts=[
+        ('a', 'clean_all', False,
+         _('clean all managed .ipynb files')),
         ('b', 'branch', '',
          _('commit output to this branch (create if needed)'))])
-    def crecord(self, branch, *pats, **opts):
-        self.nbclean()
-        isclean = self.isclean()
-        if isclean:
-            self.msg("nothing changed")
-        else:
-            self.dispatch('record')
+    def crecord(self, *pats, **opts):
+        """Record cleaned notebooks.
 
-        self.nbrestore()
+        See also:
+            hg record
+            hg ccommit
+        """
+        branch = opts.pop('branch')
+        clean_all = opts.pop('clean_all')
+        with self.clean_restore(clean_all=clean_all):
+            isclean = self.isclean()
+            if isclean:
+                self.msg("nothing changed")
+            else:
+                self.dispatch('record')
 
     # Get standard status options from commands.table
-    @_cmd(opts=commands.table['^status|st'][1],
+    @_cmd(opts=commands.table['^status|st'][1] +
+          [('a', 'clean_all', False,
+            _('clean all managed .ipynb files'))],
           synopsis=commands.table['^status|st'][2])
     def cstatus(self, *pats, **opts):
-        if self.nbclean():
-            fullargs = sys.argv[1:]   # This is a guess...
-            hook.hook(self.ui, self.repo, "pre-status", True,
-                      args=" ".join(fullargs),
-                      pats=pats, opts=opts)
-            ret = commands.status(self.ui, self.repo, *pats, **opts)
-            # run post-hook, passing command result
-            hook.hook(self.ui, self.repo, "post-status", False,
-                      args=" ".join(fullargs),
-                      result=ret, pats=pats, opts=opts)
-            self.nbrestore()
+        """Status of cleaned notebooks.
+
+        See also:
+            hg status
+        """
+        clean_all = opts.pop('clean_all')
+        with self.clean_restore(clean_all=clean_all):
+            self.run_with_hooks('status', *pats, **opts)
 
     # Get standard diff options from commands.table
-    @_cmd(opts=commands.table['^diff'][1],
+    @_cmd(opts=commands.table['^diff'][1] +
+          [('a', 'clean_all', False,
+            _('clean all managed .ipynb files'))],
           synopsis=commands.table['^diff'][2])
     def cdiff(self, *pats, **opts):
-        if self.nbclean():
-            fullargs = sys.argv[1:]   # This is a guess...
-            hook.hook(self.ui, self.repo, "pre-diff", True,
-                      args=" ".join(fullargs),
-                      pats=pats, opts=opts)
-            ret = commands.diff(self.ui, self.repo, *pats, **opts)
-            # run post-hook, passing command result
-            hook.hook(self.ui, self.repo, "post-diff", False,
-                      args=" ".join(fullargs),
-                      result=ret, pats=pats, opts=opts)
-            self.nbrestore()
+        """Diff of cleaned notebooks.
+
+        See also:
+            hg diff
+        """
+        clean_all = opts.pop('clean_all')
+        with self.clean_restore(clean_all=clean_all):
+            self.run_with_hooks('diff', *pats, **opts)
+
 
 _nbclean = NBClean()

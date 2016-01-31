@@ -1,12 +1,24 @@
   $ cat <<EOF >> $HGRCPATH
+  > [ui]
+  > username = test
+  > slash = True
+  > interactive = False
+  > mergemarkers = detailed
+  > promptecho = True
   > [extensions]
   > graphlog =
-  > [defaults]
-  > ccommit = -d "0 0"
-  > %include $MMF_SETUP/_data/nbclean.hgrc
+  > strip =
   > [alias]
   > lga = glog --style=${MMF_SETUP}/_data/hgthemes/map-cmdline.lg -l20
-  > _ccommit_output = _ccommit_output_branch
+  > [nbclean]
+  > output_branch = auto_output
+  > [defaults]
+  > commit = -d "0 0"
+  > ccommit = -d "0 0"
+  > shelve = --date "0 0"
+  > tag = -d "0 0"
+  > glog = --template '{rev}: {author} {desc|strip|firstline} ({date|shortdate}) {branches} {boorkmarks} {tags}\n'
+  > %include $MMF_SETUP/_data/nbclean.hgrc
   > EOF
 
 Test that nothing happens with a clean and completely empty repository:
@@ -45,9 +57,11 @@ Now do a more comprehensive test:
   $ hg cst
   cleaning output
   restoring output
-  $ hg lg
-  @  0:d test 0 (1970-01-01)  tip
+  $ hg glog
+  @  0: test 0 (1970-01-01)   tip
   
+
+
 
 
 
@@ -61,11 +75,13 @@ Now do a more comprehensive test:
   created new head
   no output to commit
   restoring output
-  $ hg lg
-  @  1:d test 1 (1970-01-01)  tip
+  $ hg glog
+  @  1: test 1 (1970-01-01)   tip
   |
-  o  0:d test 0 (1970-01-01)
+  o  0: test 0 (1970-01-01)
   
+
+
 
 
 
@@ -90,13 +106,15 @@ the automatic output commit will appear.
   (branches are permanent and global, did you want a bookmark?)
   automatic commit of output
   restoring output
-  $ hg lg
-  o  2:d test ...: Automatic commit with .ipynb output (* ago) auto_output tip (glob)
+  $ hg glog
+  o  2: test ...: Automatic commit with .ipynb output (*) auto_output  tip (glob)
   |
-  @  1:d test 1 (1970-01-01)
+  @  1: test 1 (1970-01-01)
   |
-  o  0:d test 0 (1970-01-01)
+  o  0: test 0 (1970-01-01)
   
+
+
 
 
 
@@ -152,16 +170,16 @@ was the source of failure for issue #2
   $ hg cst
   cleaning output
   restoring output
-  $ hg lg
-  o    5:d test ...: Automatic commit with .ipynb output (* ago) auto_output tip (glob)
+  $ hg glog
+  o    5: test ...: Automatic commit with .ipynb output (*) auto_output  tip (glob)
   |\
-  | o  4:d test 4: N2 (1970-01-01)
+  | o  4: test 4: N2 (1970-01-01)
   | |
-  | o  3:d test 3: N1 (1970-01-01)
+  | o  3: test 3: N1 (1970-01-01)
   | |
-  o |  2:d test ...: Automatic commit with .ipynb output (* ago) auto_output (glob)
+  o |  2: test ...: Automatic commit with .ipynb output (*) auto_output (glob)
   |/
-  @  1:d test 1 (1970-01-01)
+  @  1: test 1 (1970-01-01)
   |
-  o  0:d test 0 (1970-01-01)
+  o  0: test 0 (1970-01-01)
   
