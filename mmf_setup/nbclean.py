@@ -475,7 +475,7 @@ class NBClean(object):
         self.bookmark(self.tags['parent'], delete=True)
         self.bookmark(self.tags['checkpoint'], delete=True)
 
-    @_cmd(opts=[('a', 'clean_all', False,
+    @_cmd(opts=[('', 'clean-all', False,
                  _('clean all managed .ipynb files')),
                 ('f', 'force', False,
                  _('force removal of managed bookmarks etc.'))])
@@ -574,7 +574,7 @@ class NBClean(object):
 
     # Get standard commit options from commands.table
     @_cmd(opts=commands.table['^commit|ci'][1]
-          + [('a', 'clean_all', False,
+          + [('', 'clean-all', False,
               _('clean all managed .ipynb files')),
              ('b', 'branch', '',
               _('commit output to this branch (create if needed)'))],
@@ -629,7 +629,7 @@ class NBClean(object):
         self.revert(rev=auto_node, all=True, nobackup=True)
 
     @_cmd(opts=[
-        ('a', 'clean_all', False,
+        ('', 'clean-all', False,
          _('clean all managed .ipynb files')),
         ('b', 'branch', '',
          _('commit output to this branch (create if needed)'))])
@@ -651,7 +651,7 @@ class NBClean(object):
 
     # Get standard status options from commands.table
     @_cmd(opts=commands.table['^status|st'][1] +
-          [('a', 'clean_all', False,
+          [('', 'clean-all', False,
             _('clean all managed .ipynb files'))],
           synopsis=commands.table['^status|st'][2])
     def cstatus(self, *pats, **opts):
@@ -666,7 +666,7 @@ class NBClean(object):
 
     # Get standard diff options from commands.table
     @_cmd(opts=commands.table['^diff'][1] +
-          [('a', 'clean_all', False,
+          [('', 'clean-all', False,
             _('clean all managed .ipynb files'))],
           synopsis=commands.table['^diff'][2])
     def cdiff(self, *pats, **opts):
