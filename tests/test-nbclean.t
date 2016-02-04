@@ -172,13 +172,13 @@ Now update to revision 4 with the output from 5.
   cleaning output
   restoring output
   $ hg glog
-  o    5: test ...: Automatic commit with .ipynb output (2016-01-31) auto_output  tip
+  o    5: test ...: Automatic commit with .ipynb output (*) auto_output  tip (glob)
   |\
   | @  4: test 4: N2 (1970-01-01)
   | |
   | o  3: test 3: N1 (1970-01-01)
   | |
-  o |  2: test ...: Automatic commit with .ipynb output (2016-01-31) auto_output
+  o |  2: test ...: Automatic commit with .ipynb output (*) auto_output (glob)
   |/
   o  1: test 1 (1970-01-01)
   |
