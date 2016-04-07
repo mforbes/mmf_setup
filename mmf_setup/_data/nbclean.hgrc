@@ -64,7 +64,7 @@ crecord = !hg cclean && {
     hg tag -l --remove _c_parent 2> /dev/null
   }
 
-# Thise version does not link the outputs on the output branch
+# This version does not link the outputs on the output branch
 _ccommit_output_nobranch = !{
     hg bookmarks -i _c_parent
     hg revert --all -qCr _c_chk  2> /dev/null
