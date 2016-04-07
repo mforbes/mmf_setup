@@ -104,15 +104,15 @@ In particular, I structure it for the following use-cases:
 
   * **Directly from PyPI**
 
-   ``pip install --user mmf_setup``
+   ``pip install --process-dependency-links --user mmf_setup[nbextensions]``
 
   * **From Source**
 
-    ``pip install --user hg+https://bitbucket.org/mforbes/mmf_setup``
+    ``pip install --process-dependency-links --user hg+https://bitbucket.org/mforbes/mmf_setup[nbextensions]``
 
   * **From Local Source** (*Run this from the source directory after you unpack it.*)
 
-   ``pip install --user .``
+   ``pip install --process-dependency-links --user .[nbextnensions]``
 
   Note: these can be run without the ``--user`` flag if you want to
   install them system-wide rather than into |site.USER_BASE|_.

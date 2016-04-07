@@ -20,6 +20,16 @@ install_requires = [
     'nbstripout>=0.2.0',
     'python-hglib',
 ]
+
+extras_require = {
+    'nbextensions': ['Python-contrib-nbextensions'],
+}
+
+dependency_links = [
+    'git+https://github.com/' +
+    'ipython-contrib/IPython-notebook-extensions.git' +
+    '#egg=Python-contrib-nbextensions-alpha',
+]
 test_requires = []
 
 
@@ -35,8 +45,9 @@ setup(name=NAME,
 
       install_requires=install_requires,
       tests_require=test_requires,
-      extras_require={},
+      extras_require=extras_require,
       setup_requires=[],
+      dependency_links=dependency_links,
 
       scripts=['bin/mmf_setup', 'bin/mmf_setup_bash.py'],
 
