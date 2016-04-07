@@ -146,13 +146,17 @@ div.text_cell_render {
     font-family: Inconsolata, Consolas, monocco, monospace;
 }
 
-.CodeMirror {
-    overflow: visible;
-}
+/* This was an attempt to make it more obvious that long lines */
+/* extended to the right, but causes a problem with the left bar of trhe */
+/* input areas overflowing down and obscuring the output */
+
+/* .CodeMirror { */
+/*     overflow: visible; */
+/* } */
 
 div.input_area {
     border-color: rgba(0,0,0,0.10);
-    background: rbga(0,0,0,0.5);
+    background: rbga(1,0,0,0.5);
     max-width: 48.8em; /* 80 characters instead of 100%, */
 }
 

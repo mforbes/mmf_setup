@@ -22,6 +22,7 @@ MathJax.Hub.Config({
         pdiff: ["\\frac{\\partial^{#1} #2}{\\partial {#3}^{#1}}", 3, ""],
         diff: ["\\frac{\\d^{#1} #2}{\\d {#3}^{#1}}", 3, ""],
         ddiff: ["\\frac{\\delta^{#1} #2}{\\delta {#3}^{#1}}", 3, ""],
+        Tr: "\\mathop{\\mathrm{Tr}}\\nolimits",
         erf: "\\mathop{\\mathrm{erf}}\\nolimits",
         order: "\\mathop{\\mathcal{O}}\\nolimits",
         diag: "\\mathop{\\mathrm{diag}}\\nolimits",
