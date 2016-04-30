@@ -17,6 +17,7 @@ styling and some pre-defined MathJaX macros.
 __all__ = ['nbinit']
 
 from collections import OrderedDict
+from distutils.version import StrictVersion
 import importlib
 import os.path
 import shutil
@@ -83,10 +84,18 @@ class ExtensionManager(object):
                 url, overwrite=True, user=True, verbose=verbose)
 
     def enable(self, name, verbose=0):
-        notebook.nbextensions.EnableNBExtensionApp().enable_nbextension(name)
+        if StrictVersion(notebook.__version__) < StrictVersion('4.2.0'):
+            notebook.nbextensions.EnableNBExtensionApp().enable_nbextension(name)
+        else:
+            notebook.nbextensions.enable_nbextension(section='notebook',
+                                                     require=name)
 
     def disable(self, name, verbose=0):
-        notebook.nbextensions.DisableNBExtensionApp().disable_nbextension(name)
+        if StrictVersion(notebook.__version__) < StrictVersion('4.2.0'):
+            notebook.nbextensions.DisableNBExtensionApp().disable_nbextension(name)
+        else:
+            notebook.nbextensions.disable_nbextension(section='notebook',
+                                                      require=name)
 
     def install_all(self, verbose=0):
         for name in self._EXTENSIONS:
@@ -151,6 +160,7 @@ $( document ).ready(code_toggle);
         """))
     if debug:
         return res
+
 
 ######################################################################
 # Old stuff.  This was the old way of installing things.  There are
