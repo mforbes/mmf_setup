@@ -1,5 +1,5 @@
 import os.path
-from notebook_configuration import nbinit
+from .notebook_configuration import nbinit
 
 __all__ = ['nbinit', 'MMF_SETUP', 'DATA', 'HGTHEMES', 'NBTHEMES', 'HGRC']
 

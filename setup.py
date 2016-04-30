@@ -12,13 +12,25 @@ import os.path
 import sys
 
 from setuptools import setup, find_packages
-from setuptools.command.test import test as original_test
 
 NAME = "mmf_setup"
+
+setup_requires = [
+    'pytest-runner'
+]
 
 install_requires = [
     'nbstripout>=0.2.0',
     'python-hglib',
+]
+
+test_requires = [
+    'pytest>=2.8.1',
+    'pytest-cov>=2.2.0',
+    'pytest-flake8',
+    'coverage',
+    'flake8',
+    'pep8==1.5.7',     # Needed by flake8: dependency resolution issue if not pinned
 ]
 
 extras_require = {
@@ -30,8 +42,13 @@ dependency_links = [
     'ipython-contrib/IPython-notebook-extensions.git' +
     '#egg=Python-contrib-nbextensions-alpha',
 ]
-test_requires = []
 
+# Remove NAME from sys.modules so that it gets covered in tests. See
+# http://stackoverflow.com/questions/11279096
+for mod in sys.modules.keys():
+    if mod.startswith(NAME):
+        del sys.modules[mod]
+del mod
 
 # Get the long description from the README.rst file
 _HERE = os.path.abspath(os.path.dirname(__file__))
@@ -43,10 +60,10 @@ setup(name=NAME,
       version='0.1.7.dev0',
       packages=find_packages(exclude=['tests']),
 
+      setup_requires=setup_requires,
       install_requires=install_requires,
       tests_require=test_requires,
       extras_require=extras_require,
-      setup_requires=[],
       dependency_links=dependency_links,
 
       scripts=['bin/mmf_setup', 'bin/mmf_setup_bash.py'],
@@ -85,5 +102,5 @@ setup(name=NAME,
           'Programming Language :: Python :: 2.7',
       ],
 
-      keywords='ipython jupyter notebook setup',
+      keywords='ipython jupyter notebook setup mercurial',
       )
