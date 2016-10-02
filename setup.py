@@ -25,6 +25,7 @@ install_requires = [
 ]
 
 test_requires = [
+    'notebook',
     'pytest>=2.8.1',
     'pytest-cov>=2.2.0',
     'pytest-flake8',
@@ -66,7 +67,7 @@ setup(name=NAME,
       extras_require=extras_require,
       dependency_links=dependency_links,
 
-      scripts=['bin/mmf_setup', 'bin/mmf_setup_bash.py'],
+      scripts=['bin/mmf_setup', 'bin/mmf_initial_setup', 'bin/mmf_setup_bash.py'],
 
       # Include data from MANIFEST.in
       include_package_data=True,
