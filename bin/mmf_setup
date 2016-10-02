@@ -5,7 +5,13 @@ function usage() {
     echo
     echo "  -v : show variables that are set"
     echo
+    echo "For initial setup on sage.mathcloud.com projects:"
+    echo
+    echo "   mmf_setup smc"
+    echo
 }
+
+BIN_DIR="$(dirname $0)"
 
 for i in "$@"
 do
@@ -13,6 +19,13 @@ do
         -v)
             echo "mmf_setup environment:"
             echo "$(mmf_setup_bash.py)"
+            ;;
+        smc)
+            DATA_DIR="$(python -c 'import mmf_setup;print(mmf_setup.DATA)')"
+            echo "Seting up config files for Sage Mathcloud..."
+            shift # move to the next argument
+            exec "$BIN_DIR/mmf_initial_setup" \
+                 -v --src "$DATA_DIR/config_files/smc" $*
             ;;
         *)
             usage
