@@ -14,8 +14,6 @@ Usage:
 This module provides customization for Jupyter notebooks including
 styling and some pre-defined MathJaX macros.
 """
-__all__ = ['nbinit']
-
 from collections import OrderedDict
 from distutils.version import StrictVersion
 import importlib
@@ -27,9 +25,10 @@ import tempfile
 import traceback
 import warnings
 
-import IPython
 from IPython.display import HTML, Javascript, display, clear_output
 import notebook
+
+__all__ = ['nbinit']
 
 _HERE = os.path.abspath(os.path.dirname(__file__))
 _DATA = os.path.join(_HERE, '_data')
@@ -173,7 +172,8 @@ def run_with_bash(cmds):
 
     Example
     -------
-    >>> run_with_bash([['ls', '-la']])
+    >>> res = run_with_bash([['echo', 'hello!']])
+    Running: echo hello!
     """
     for cmd in cmds:
         print("Running: {}".format(" ".join(cmd)))
@@ -209,7 +209,7 @@ class Install(object):
         self.old_ipython_dir = None
 
     def install_nbextension(self, name):
-        install_nbextension(name, user=self.user)
+        notebook.install_nbextension(name, user=self.user)
 
     def __enter__(self):
         """Set the IPYTHONDIR environment variable."""
@@ -229,7 +229,7 @@ class Install(object):
 
     def install_all(self):
         self.install_calico_tools()
-        #self.install_drag_and_drop()
+        # self.install_drag_and_drop()
         self.install_mathjax()
         self.install_rise()
 

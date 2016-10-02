@@ -121,14 +121,10 @@ class NBClean(object):
             'new',  # If a new commit is required for the checkpoint,
                     # then this will refer to it.  It should
                     # ultimately be striped.
-            ]
+        ]
         _prefix = '_nbclean'
 
         self.tags = dict((_t, '_'.join([_prefix, _t])) for _t in _tags)
-
-        # Register commands with mercurial
-        for name, opts, synopsis, kw in _COMMANDS:
-            command(name, opts, synopsis, **kw)(getattr(self, name))
 
     def __del__(self):
         self.devnull.close()
@@ -404,7 +400,7 @@ class NBClean(object):
 
         # run post-hook, passing command result
         hook.hook(self.ui, self.repo, "post-{}".format(cmd),
-                  False,  args=args, result=ret, pats=pats, opts=opts)
+                  False, args=args, result=ret, pats=pats, opts=opts)
         return ret
 
     def automerge(self, src, dest, checkpoint):
@@ -431,7 +427,7 @@ class NBClean(object):
         self.revert(checkpoint)
         self.revert(checkpoint)
 
-    def config(self, name,  default='', section='nbclean'):
+    def config(self, name, default='', section='nbclean'):
         """Return the value of nbclean.name from the configuration
         file."""
         if API:
@@ -598,8 +594,7 @@ class NBClean(object):
             if isclean:
                 self.msg("nothing changed")
             else:
-                isclean = (
-                    None == self.run_with_hooks('commit', *pats, **opts))
+                isclean = (self.run_with_hooks('commit', *pats, **opts) is None)
 
             if isclean:
                 self.commit_output(branch)
@@ -640,7 +635,7 @@ class NBClean(object):
             hg record
             hg ccommit
         """
-        branch = opts.pop('branch')
+        # branch = opts.pop('branch')
         clean_all = opts.pop('clean_all')
         with self.clean_restore(clean_all=clean_all):
             isclean = self.isclean()
@@ -681,3 +676,7 @@ class NBClean(object):
 
 
 _nbclean = NBClean()
+
+# Register commands with mercurial
+for name, opts, synopsis, kw in _COMMANDS:
+    command(name, opts, synopsis, **kw)(getattr(_nbclean, name).__func__)

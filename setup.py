@@ -25,6 +25,7 @@ install_requires = [
 ]
 
 test_requires = [
+    'notebook',
     'pytest>=2.8.1',
     'pytest-cov>=2.2.0',
     'pytest-flake8',
