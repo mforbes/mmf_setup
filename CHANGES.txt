@@ -1,3 +1,8 @@
+0.1.8:
+- Resolves issue #15.
+- Use $BASH_SOURCE{0} to get BIN_DIR (resolves issue #16)
+- Added nbinit(hgroot) option to add `hg root` to `sys.path` (issue #13)
+
 0.1.7:
 - Changed option to --clean-all (resolves issue #7)
 - Updated the notebook style (added \Tr, fixed output overflow issue)
