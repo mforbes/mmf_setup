@@ -14,8 +14,6 @@ Usage:
 This module provides customization for Jupyter notebooks including
 styling and some pre-defined MathJaX macros.
 """
-from collections import OrderedDict
-from distutils.version import StrictVersion
 import importlib
 import os.path
 import shutil
@@ -23,7 +21,6 @@ import subprocess
 import sys
 import tempfile
 import traceback
-import warnings
 
 from IPython.display import HTML, Javascript, display, clear_output
 import notebook
@@ -35,7 +32,28 @@ _DATA = os.path.join(_HERE, '_data')
 _NBTHEMES = os.path.join(_DATA, 'nbthemes')
 
 
-def nbinit(theme='mmf', toggle_code=False, debug=False):
+def nbinit(theme='mmf', hgroot=True, toggle_code=False, debug=False):
+    """Initialize a notebook.
+
+    This function displays a set of CSS and javascript code to customize the
+    notebook, for example, defining some MathJaX latex commands.  Saving the
+    notebook with this output should allow the notebook to render correctly on
+    nbviewer.org etc.
+
+    Arguments
+    ---------
+    theme : str
+       Choose a theme.  Default `'mmf'`
+    hgroot : bool
+       If `True`, then add the root hg directory to the path so that top-level
+       packages can be imported without installation.  This is the path
+       returned by `hg root`.
+    toggle_code : bool
+       If `True`, then provide a function to toggle the visibility of input
+       code.  (This should be replaced by an extension.)
+    debug : bool
+       If `True`, then return the list of CSS etc. code displayed to the notebook.
+    """
     clear_output()
 
     res = []
@@ -73,6 +91,16 @@ $( document ).ready(code_toggle);
     value="Click here to toggle on/off the raw code."></form>
 
         """))
+
+    if hgroot:
+        try:
+            hg_root = subprocess.check_output(['hg', 'root']).strip()
+            if hg_root not in sys.path:
+                sys.path.insert(0, hg_root)
+        except subprocess.CalledProcessError:
+            # Could not run hg or not in a repo.
+            pass
+
     if debug:
         return res
 
