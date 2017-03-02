@@ -679,4 +679,4 @@ _nbclean = NBClean()
 
 # Register commands with mercurial
 for name, opts, synopsis, kw in _COMMANDS:
-    command(name, opts, synopsis, **kw)(getattr(_nbclean, name).__func__)
+    command(name, opts, synopsis, **kw)(getattr(_nbclean, name))
