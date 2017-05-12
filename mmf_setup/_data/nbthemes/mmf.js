@@ -33,6 +33,7 @@ MathJax.Hub.Config({
         ddiff: ["\\frac{\\delta^{#1} #2}{\\delta {#3}^{#1}}", 3, ""],
         Tr: "\\mathop{\\mathrm{Tr}}\\nolimits",
         erf: "\\mathop{\\mathrm{erf}}\\nolimits",
+        erfi: "\\mathop{\\mathrm{erfi}}\\nolimits",
         order: "\\mathop{\\mathcal{O}}\\nolimits",
         diag: "\\mathop{\\mathrm{diag}}\\nolimits",
         floor: ["\\left\\lfloor#1\\right\\rfloor", 1],
