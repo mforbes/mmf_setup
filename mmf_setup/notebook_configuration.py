@@ -47,7 +47,7 @@ def nbinit(theme='mmf', hgroot=True, toggle_code=False, debug=False):
     hgroot : bool
        If `True`, then add the root hg directory to the path so that top-level
        packages can be imported without installation.  This is the path
-       returned by `hg root`.
+       returned by `hg root`.  This path is also stored as `mmf_setup.HGROOT`.
     toggle_code : bool
        If `True`, then provide a function to toggle the visibility of input
        code.  (This should be replaced by an extension.)
@@ -97,6 +97,8 @@ $( document ).ready(code_toggle);
             hg_root = subprocess.check_output(['hg', 'root']).strip()
             if hg_root not in sys.path:
                 sys.path.insert(0, hg_root)
+            import mmf_setup
+            mmf_setup.HGROOT = hg_root
         except subprocess.CalledProcessError:
             # Could not run hg or not in a repo.
             pass
