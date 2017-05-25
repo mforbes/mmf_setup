@@ -1,14 +1,13 @@
   $ export PATH="$RUNTESTDIR/../bin/:$PATH"
   $ mmf_initial_setup --help
-  Usage: mmf_initial_setup [options]
+  Usage: mmf_initial_setup [options] dir1 dir2 ...
   
-  Creates symlinks to files in the config directory (default "./").
+  Creates symlinks to files in the specified config directories (default "./").
   
   Options:
     -h, --help         show this help message and exit
     --home=<home>      use <home> rather than ~ for installation.(Used to
                        replace '~' in dest strings.)
-    --src=<src>        use config files in <src> rather than current directory
     -v, --verbose      print lots of information
     -n, --no-action    don't do anything:only print commands that would be
                        executed
@@ -22,13 +21,13 @@
   $ SRC="$RUNTESTDIR/../mmf_setup/_data/config_files/smc"
   $ mkdir home
   $ touch home/.bash_aliases
-  $ mmf_initial_setup -n --src="$SRC" --home="./home"
+  $ mmf_initial_setup -n --home="./home" "${SRC}"
   backup('./home/.bash_aliases')
   os.symlink('*/config_files/smc/bash_aliases', './home/.bash_aliases') (glob)
   os.symlink('*/config_files/smc/hgignore', './home/.hgignore') (glob)
   os.symlink('*/config_files/smc/hgrc', './home/.hgrc') (glob)
   os.symlink('*/config_files/smc/inputrc', './home/.inputrc') (glob)
-  $ mmf_initial_setup --src="$SRC" --home="./home"
+  $ mmf_initial_setup --home="./home" "${SRC}"
   $ ls -aF ./home
   ./
   ../
@@ -37,9 +36,9 @@
   .hgignore@
   .hgrc@
   .inputrc@
-  $ mmf_initial_setup -v --src="$SRC" --home="./home"
+  $ mmf_initial_setup -v --home="./home" "${SRC}"
   Using <home> = ./home
-  Using <src> = */mmf_setup/_data/config_files/smc (glob)
+  Using dir = */mmf_setup/_data/config_files/smc (glob)
   Symlink ./home/.bash_aliases exists.
   os.remove('./home/.bash_aliases')
   os.symlink('*/config_files/smc/bash_aliases', './home/.bash_aliases') (glob)
