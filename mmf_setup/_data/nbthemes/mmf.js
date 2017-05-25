@@ -34,6 +34,7 @@ MathJax.Hub.Config({
         Tr: "\\mathop{\\mathrm{Tr}}\\nolimits",
         erf: "\\mathop{\\mathrm{erf}}\\nolimits",
         erfi: "\\mathop{\\mathrm{erfi}}\\nolimits",
+        sech: "\\mathop{\\mathrm{sech}}\\nolimits",
         order: "\\mathop{\\mathcal{O}}\\nolimits",
         diag: "\\mathop{\\mathrm{diag}}\\nolimits",
         floor: ["\\left\\lfloor#1\\right\\rfloor", 1],
