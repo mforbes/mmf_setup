@@ -12,26 +12,27 @@
   > pre-commit = false
   > EOF
   $ hg ccom -m "Modified A"
-  cleaning output
-  nothing changed
-  no output to commit
-  restoring output
+  Aborting... could not create checkpoint commmit!
+  running hook pre-commit: false
+  abort: pre-commit hook exited with status 1
+  [255]
   $ hg lg
-  o  0:d test Added A (1970-01-01) (glob)
+  @  0:d test Added A (1970-01-01)  tip
+  
 
 If the commit failed, then the modified files should still be there.
 Issue #18 was that the file was removed.
 
   $ hg st
-  M A.py
-  $ cat A.py
+  M A
+  $ cat A
   A
 
 # Another possible result (if pre-commit hooks are ignored) is:
 $ hg lg
-@  1:d test Modified A (1970-01-01)  tip (glob)
+@  1:d test Modified A (1970-01-01)  tip
 |
-o  0:d test Added A (1970-01-01) (glob)
+o  0:d test Added A (1970-01-01)
 
 
 
