@@ -336,7 +336,7 @@ class NBClean(object):
         else:
             self.client.branch(name)
 
-    def checkpoint(self):
+    def checkpoint(self, force=False):
         """Create a checkpoint of the current working copy.
 
         See also:
@@ -345,20 +345,61 @@ class NBClean(object):
         # Preconditions
         #   * None
         # Postconditions
-        #   * The current working copy is stored in a node with
-        #     bookmark 'checkpoint'
-        #   * If a new node was created to do this, it has tag 'new'
+        #   EITHER
+        #     * remove tags and bookmarks (if they were present)
+        #     * exit(-1)
+        #   OR
+        #     * The current working copy is stored in a node with
+        #       bookmark 'checkpoint'
+        #     * If a new node was created to do this, it has tag 'new'
+
+        # Remove any old bookmarks first.
+        bookmarks = self.bookmarks()
+        for bookmark in [self.tags['parent'],
+                         self.tags['checkpoint']]:
+            if bookmark in bookmarks:
+                if force:
+                    self.bookmark(bookmark, delete=True)
+                else:
+                    self.msg(
+                        "Aborting... bookmark {} exists! ".format(bookmark) +
+                        "(run 'hg nbclean --force' to force cleaning)",
+                        err=True)
+                    sys.exit(-1)
+
         self.bookmark(self.tags['parent'])
-        if API:
-            if self.dispatch('commit -qm "CHK: auto checkpoint"'):
-                self.dispatch('tag -fl {}'.format(self.tags['new']))
-        else:
-            try:
-                self.client.commit(message="CHK: auto checkpoint")
-                self.client.tag(names=self.tags['new'], local=True, force=True)
-            except hglib.error.CommandError:
-                pass
-        self.bookmark(self.tags['checkpoint'])
+        try:
+            if API:
+                if self.dispatch('commit -qm "CHK: auto checkpoint"'):
+                    self.dispatch('tag -fl {}'.format(self.tags['new']))
+            else:
+                try:
+                    self.client.commit(message="CHK: auto checkpoint")
+                except hglib.error.CommandError, err:
+                    if err.ret != 1:
+                        self.msg(
+                            "\n".join([
+                                "Aborting... could not create checkpoint commmit!",
+                                err.out.rstrip(),
+                                err.err.rstrip()]),
+                            err=True)
+                        sys.exit(-1)
+                else:
+                    try:
+                        self.client.tag(names=self.tags['new'],
+                                        local=True, force=True)
+                    except hglib.error.CommandError:
+                        pass
+
+            self.bookmark(self.tags['checkpoint'])
+        except:
+            # Delete any bookmarks on failure
+            bookmarks = self.bookmarks()
+            for bookmark in [self.tags['parent'],
+                             self.tags['checkpoint']]:
+                if bookmark in bookmarks:
+                    self.bookmark(bookmark, delete=True)
+            raise
 
     @property
     @contextmanager
@@ -444,9 +485,19 @@ class NBClean(object):
             return res.get(name, default)
 
     @contextmanager
-    def clean_restore(self, **kw):
+    def clean_restore(self, force=False, **kw):
+        # Preconditions
+        #   * Nothing
+        # Postconditions
+        #   EITHER
+        #     * remove tags and bookmarks (if they were present)
+        #     * raise Abort
+        #   OR
+        #     * Current state checkpointed
+        #     * Specified output cleaned from notebooks.
+        self.checkpoint(force=force)
         try:
-            yield self.nbclean(**kw)
+            yield self.clean_output(force=force, **kw)
         finally:
             self.nbrestore()
 
@@ -493,23 +544,28 @@ class NBClean(object):
         #     * All A or M .ipynb have output stripped
         #     * Desired parent node has tag 'parent'.  (This might
         #       be the original parent, or might be a new commit.)
+        self.checkpoint(force=force)
+        return self.clean_output(clean_all=clean_all, force=force)
 
-        # Remove any old bookmarks first.
-        bookmarks = self.bookmarks()
-        for bookmark in [self.tags['parent'],
-                         self.tags['checkpoint']]:
-            if bookmark in bookmarks:
-                if force:
-                    self.bookmark(bookmark, delete=True)
-                else:
-                    self.msg(
-                        "Aborting... bookmark {} exists! ".format(bookmark) +
-                        "(run 'hg nbclean --force' to force cleaning)",
-                        err=True)
-                    sys.exit(-1)
+    def clean_output(self, clean_all=False, force=False):
+        """Clean output from all added or modified .ipynb notebooks.
 
+        See also:
+           hg nbrestore
+        """
+        # Preconditions
+        #   * Nothing - this is an entrypoint.
+        # Postconditions
+        #   EITHER
+        #     * remove tags and bookmarks (if they were present)
+        #     * raise Abort
+        #   OR
+        #     * Current state checkpointed in revision with tag 'checkpoint'
+        #     * Potentially new checkpoint commit with tag 'checkpoint'
+        #     * All A or M .ipynb have output stripped
+        #     * Desired parent node has tag 'parent'.  (This might
+        #       be the original parent, or might be a new commit.)
         self.msg("cleaning output")
-        self.checkpoint()
         self.update(self.tags['parent'])
         self.revert(self.tags['checkpoint'])
 
