@@ -93,15 +93,7 @@ $( document ).ready(code_toggle);
         """))
 
     if hgroot:
-        try:
-            hg_root = subprocess.check_output(['hg', 'root']).strip()
-            if hg_root not in sys.path:
-                sys.path.insert(0, hg_root)
-            import mmf_setup
-            mmf_setup.HGROOT = hg_root
-        except subprocess.CalledProcessError:
-            # Could not run hg or not in a repo.
-            pass
+        from .set_path import hgroot
 
     if debug:
         return res
