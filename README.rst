@@ -99,6 +99,11 @@ In particular, I structure it for the following use-cases:
  Quickstart (TL;DR)
 ====================
 
+0. To get the notebook initialization features without having to install the
+   package, just copy `nbinit.py <nbinit.py>`_ to your project.  Importing this
+   will try to execute `import mmf_setup;mmf_setup.nbinit()` but failing this,
+   will manually run a similar code.
+
 1. Install this package from the source directory, PyPI_, etc. with
    one of the following:
 
