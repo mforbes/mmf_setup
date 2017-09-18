@@ -7,6 +7,9 @@ include $(makefiles_dir)/rst2html.mk
 PYTHON="$$(shebang=$$(head -n1 $$(type -p hg));echo $${shebang:2})"
 HG=`which hg`
 
+nbinit.py: make_nbinit.py mmf_setup/_data/nbthemes/mmf.*
+	python make_nbinit.py
+
 help:
 	@echo 'Commonly used make targets:'
 	@echo '  test - run all tests in the automatic test suite'
