@@ -26,6 +26,7 @@ MathJax.Hub.Config({
         Ket: ["\\left|#1\\right\\rangle", 1],
         Bra: ["\\left\\langle#1\\right|", 1],
         braket: ["\\langle#1\\rangle", 1],
+        Braket: ["\\left\\langle#1\\right\\rangle", 1],
         op: ["\\mathbf{#1}", 1],
         mat: ["\\mathbf{#1}", 1],
         pdiff: ["\\frac{\\partial^{#1} #2}{\\partial {#3}^{#1}}", 3, ""],
