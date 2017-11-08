@@ -245,14 +245,15 @@ MathJax.Hub.Config({
         pdiff: ["\\frac{\\partial^{#1} #2}{\\partial {#3}^{#1}}", 3, ""],
         diff: ["\\frac{\\d^{#1} #2}{\\d {#3}^{#1}}", 3, ""],
         ddiff: ["\\frac{\\delta^{#1} #2}{\\delta {#3}^{#1}}", 3, ""],
+        floor: ["\\left\\lfloor#1\\right\\rfloor", 1],
+        ceil: ["\\left\\lceil#1\\right\\rceil", 1],
         Tr: "\\mathop{\\mathrm{Tr}}\\nolimits",
         erf: "\\mathop{\\mathrm{erf}}\\nolimits",
         erfi: "\\mathop{\\mathrm{erfi}}\\nolimits",
         sech: "\\mathop{\\mathrm{sech}}\\nolimits",
+        sgn: "\\mathop{\\mathrm{sgn}}\\nolimits",
         order: "\\mathop{\\mathcal{O}}\\nolimits",
         diag: "\\mathop{\\mathrm{diag}}\\nolimits",
-        floor: ["\\left\\lfloor#1\\right\\rfloor", 1],
-        ceil: ["\\left\\lceil#1\\right\\rceil", 1],
 
         mylabel: ["\\label{#1}\\tag{#1}", 1],
         degree: ["^{\\circ}"],
@@ -273,17 +274,25 @@ MathJax.Hub.Config({
 \newcommand{\ket}[1]{\left|#1\right\rangle}
 \newcommand{\bra}[1]{\left\langle#1\right|}
 \newcommand{\braket}[1]{\langle#1\rangle}
+\newcommand{\Braket}[1]{\left\langle#1\right\rangle}
 \newcommand{\op}[1]{\mathbf{#1}}
 \newcommand{\mat}[1]{\mathbf{#1}}
 \newcommand{\d}{\mathrm{d}}
 \newcommand{\pdiff}[3][]{\frac{\partial^{#1} #2}{\partial {#3}^{#1}}}
 \newcommand{\diff}[3][]{\frac{\d^{#1} #2}{\d {#3}^{#1}}}
 \newcommand{\ddiff}[3][]{\frac{\delta^{#1} #2}{\delta {#3}^{#1}}}
-\DeclareMathOperator{\erf}{erf}
+\newcommand{\floor}[1]{\left\lfloor#1\right\rfloor}
+\newcommand{\ceil}[1]{\left\lceil#1\right\rceil}
 \DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\erf}{erf}
+\DeclareMathOperator{\erfi}{erfi}
+\DeclareMathOperator{\sech}{sech}
+\DeclareMathOperator{\sgn}{sgn}
 \DeclareMathOperator{\order}{O}
 \DeclareMathOperator{\diag}{diag}
-\DeclareMathOperator{\sgn}{sgn}
+
+\newcommand{\mylabel}[#1]{\label{#1}\tag{#1}}
+\newcommand{\degree}{\circ}
 </script>
 <i>
 <p>This cell contains some definitions for equations and some CSS for styling the notebook.  If things look a bit strange, please try the following:
