@@ -99,30 +99,30 @@ In particular, I structure it for the following use-cases:
  Quickstart (TL;DR)
 ====================
 
-0. To get the notebook initialization features without having to install the
+1. To get the notebook initialization features without having to install the
    package, just copy `nbinit.py <nbinit.py>`_ to your project.  Importing this
    will try to execute `import mmf_setup;mmf_setup.nbinit()` but failing this,
    will manually run a similar code.
 
-1. Install this package from the source directory, PyPI_, etc. with
+2. Install this package from the source directory, PyPI_, etc. with
    one of the following:
+  
+   * **Directly from PyPI**
 
-  * **Directly from PyPI**
+     ``pip install --process-dependency-links --user mmf_setup[nbextensions]``
 
-   ``pip install --process-dependency-links --user mmf_setup[nbextensions]``
+   * **From Source**
 
-  * **From Source**
+     ``pip install --process-dependency-links --user hg+https://bitbucket.org/mforbes/mmf_setup[nbextensions]``
 
-    ``pip install --process-dependency-links --user hg+https://bitbucket.org/mforbes/mmf_setup[nbextensions]``
+   * **From Local Source** (*Run this from the source directory after you unpack it.*)
 
-  * **From Local Source** (*Run this from the source directory after you unpack it.*)
+     ``pip install --process-dependency-links --user .[nbextnensions]``
 
-   ``pip install --process-dependency-links --user .[nbextnensions]``
+   Note: these can be run without the ``--user`` flag if you want to
+   install them system-wide rather than into |site.USER_BASE|_.
 
-  Note: these can be run without the ``--user`` flag if you want to
-  install them system-wide rather than into |site.USER_BASE|_.
-
-2. To get the notebook tools for Jupyter (IPython) notebooks, execute
+3. To get the notebook tools for Jupyter (IPython) notebooks, execute
    the following as a code cell in your notebook and then trust the
    notebook with ``File/Trust Notebook``::
 
@@ -134,7 +134,7 @@ In particular, I structure it for the following use-cases:
    specify different themes. (Presently only ``theme='default'`` and
    ``theme='mmf'`` are supported.)
 
-3. To use the mercurial notebook cleaning tools, simply source the
+4. To use the mercurial notebook cleaning tools, simply source the
    ``mmf_setup`` script::
 
       . mmf_setup -v
