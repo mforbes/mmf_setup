@@ -1,3 +1,12 @@
+0.1.9:
+- Resolve issues:
+  - #17: store mmf_setup.HGROOT
+  - #18: safer exception handling with nbclean commands so data is not lost
+  - #19: nbclean works with new mercurial API
+- Added \erfi, \sech, \Braket
+- `import mmf_setup.set_path.hgroot` will add HGROOT to path without IPython
+- Added standalone nbinit.py for use without mmf_setup installs.
+  
 0.1.8:
 - Resolves issue #15.
 - Use $BASH_SOURCE{0} to get BIN_DIR (resolves issue #16)
