@@ -1,3 +1,10 @@
+0.1.10:
+- Added better backwards compatibility for previous changes.
+- Simplified nbinit theme management and use 'default' theme as default.
+  - New themes only need to overwrite what they need.
+  - Don't change fonts as default since this does not work well on CoCalc (the
+    code cells change size on clicking which is a pain.)
+
 0.1.9:
 - Resolve issues:
   - #17: store mmf_setup.HGROOT
