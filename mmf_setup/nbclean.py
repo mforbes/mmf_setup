@@ -50,13 +50,19 @@ import sys
 import hglib
 
 from mercurial.dispatch import dispatch, request
-from mercurial import cmdutil, commands, hook, registrar
+from mercurial import commands, hook, registrar, cmdutil
+
 from mercurial.i18n import _    # International support
 
 import nbstripout
 
 cmdtable = {}
-command = registrar.command(cmdtable)
+
+try:
+    command = registrar.command(cmdtable)
+except AttributeError:
+    command = cmdutil.command(cmdtable)
+    
 
 testedwith = '3.6.3'
 
