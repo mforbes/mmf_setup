@@ -31,51 +31,20 @@ _HERE = os.path.abspath(os.path.dirname(__file__))
 _DATA = os.path.join(_HERE, '_data')
 _NBTHEMES = os.path.join(_DATA, 'nbthemes')
 
+_MESSAGE = r"""
+<i>
+<p>This cell contains some definitions for equations and some CSS for styling
+  the notebook. If things look a bit strange, please try the following:
+<ul>
+  <li>Choose "Trust Notebook" from the "File" menu.</li>
+  <li>Re-execute this cell.</li>
+  <li>Reload the notebook.</li>
+</ul>
+</p>
+</i>
+"""
 
-def nbinit(theme='mmf', hgroot=True, toggle_code=False, debug=False):
-    """Initialize a notebook.
-
-    This function displays a set of CSS and javascript code to customize the
-    notebook, for example, defining some MathJaX latex commands.  Saving the
-    notebook with this output should allow the notebook to render correctly on
-    nbviewer.org etc.
-
-    Arguments
-    ---------
-    theme : str
-       Choose a theme.  Default `'mmf'`
-    hgroot : bool
-       If `True`, then add the root hg directory to the path so that top-level
-       packages can be imported without installation.  This is the path
-       returned by `hg root`.  This path is also stored as `mmf_setup.HGROOT`.
-    toggle_code : bool
-       If `True`, then provide a function to toggle the visibility of input
-       code.  (This should be replaced by an extension.)
-    debug : bool
-       If `True`, then return the list of CSS etc. code displayed to the notebook.
-    """
-    clear_output()
-
-    res = []
-
-    def _display(val):
-        res.append(val)
-        display(val)
-
-    with open(os.path.join(
-            _NBTHEMES, '{theme}.css'.format(theme=theme))) as _f:
-        _display(HTML(r"<style>{}</style>".format(_f.read())))
-
-    with open(os.path.join(
-            _NBTHEMES, '{theme}.js'.format(theme=theme))) as _f:
-        _display(Javascript(_f.read()))
-
-    with open(os.path.join(
-            _NBTHEMES, '{theme}.html'.format(theme=theme))) as _f:
-        _display(HTML(_f.read()))
-
-    if toggle_code:
-        _display(HTML(r"""<script>
+_TOGGLE_CODE = r"""<script>
 code_show=true;
 function code_toggle() {
  if (code_show){
@@ -89,8 +58,71 @@ $( document ).ready(code_toggle);
 </script>
 <form action="javascript:code_toggle()"><input type="submit"
     value="Click here to toggle on/off the raw code."></form>
+"""
 
-        """))
+
+def nbinit(theme='default', hgroot=True, toggle_code=False, debug=False, quiet=False):
+    """Initialize a notebook.
+
+    This function displays a set of CSS and javascript code to customize the
+    notebook, for example, defining some MathJaX latex commands.  Saving the
+    notebook with this output should allow the notebook to render correctly on
+    nbviewer.org etc.
+
+    Arguments
+    ---------
+    theme : str
+       Choose a theme.
+    hgroot : bool
+       If `True`, then add the root hg directory to the path so that top-level
+       packages can be imported without installation.  This is the path
+       returned by `hg root`.  This path is also stored as `mmf_setup.HGROOT`.
+    toggle_code : bool
+       If `True`, then provide a function to toggle the visibility of input
+       code.  (This should be replaced by an extension.)
+    debug : bool
+       If `True`, then return the list of CSS etc. code displayed to the
+       notebook.
+    quiet : bool
+       If `True`, then do not display message about reloading and trusting notebook.
+    """
+    clear_output()
+
+    res = []
+
+    def _load(ext, theme=theme):
+        """Try loading resource from theme, fallback to default"""
+        for _theme in [theme, 'default']:
+            _file = os.path.join(_NBTHEMES,
+                                 '{theme}{ext}'.format(theme=_theme, ext=ext))
+            if os.path.exists(_file):
+                with open(_file) as _f:
+                    return _f.read()
+        return ""
+        
+    def _display(val, wrapper=HTML):
+        res.append((val, wrapper))
+        display(wrapper(val))
+
+    # CSS
+    _display(r"<style>{}</style>".format(_load(".css")))
+
+    # Javascript
+    _display(_load('.js'), wrapper=Javascript)
+
+    # LaTeX commands
+    _template = r'<script id="MathJax-Element-48" type="math/tex">{}</script>'
+    _display(_template.format(_load('.tex').strip()))
+
+    # Remaining HTML
+    _display(_load('.html'))
+
+    # Message
+    if not quiet:
+        _display(_MESSAGE)
+        
+    if toggle_code:
+        _display(_TOGGLE_CODE)
 
     if hgroot:
         from .set_path import hgroot
