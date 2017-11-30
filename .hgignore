@@ -1,6 +1,7 @@
 syntax: glob
 
 dist/
+build/
 *README.html
 .DS_Store
 *.egg-info*
