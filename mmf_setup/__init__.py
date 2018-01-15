@@ -8,3 +8,4 @@ DATA = os.path.join(MMF_SETUP, '_data')
 HGRC = os.path.join(DATA, 'hgrc')
 HGTHEMES = os.path.join(DATA, 'hgthemes')
 NBTHEMES = os.path.join(DATA, 'nbthemes')
+ROOT = '.'
