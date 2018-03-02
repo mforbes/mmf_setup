@@ -58,7 +58,7 @@ with open(os.path.join(_HERE, 'README.rst')) as _f:
 
 
 setup(name=NAME,
-      version='0.1.11',
+      version='0.1.12dev',
       packages=find_packages(exclude=['tests']),
 
       setup_requires=setup_requires,

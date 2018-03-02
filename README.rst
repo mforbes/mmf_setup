@@ -288,15 +288,20 @@ numbers etc. for release 0.1.11.)
 6. Create a pull request (PR) on bitbucket to pull this branch to ``default`` and
 	 make sure to specify to close the branch on pull.
 7. Check, approve, and merge the PR.
-8. Pull the merge from bitbucket to your development machine but **do not update**.
-9. Update the version in ``setup.py`` to ``'0.1.12dev'`` or whatever is relevant.
-10. From the previous commit (the last commit on branch ``0.1.11`` in this case),
+8. Upload your package to ``pypi`` with ``twine``::
+
+		 python setup.py sdist bdist_wheel
+	 
+9. Pull the merge from bitbucket to your development machine but **do not update**.
+10. Update the version in ``setup.py`` to ``'0.1.12dev'`` or whatever is relevant.
+11. From the previous commit (the last commit on branch ``0.1.11`` in this case),
 	  change the branch::
 
 	    hg branch 0.1.12
 			
-11. Commit and optionally push.  Now you are ready to work on new changes.
+12. Commit and optionally push.  Now you are ready to work on new changes::
 
+			hg com -m "BRN: Start branch 0.1.12"
 
 
 Notes
