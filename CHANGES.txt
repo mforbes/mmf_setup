@@ -1,3 +1,10 @@
+0.1.11:
+- Resolve issue #20:
+	- `mmf_setup.set_path.set_path_from_file` allows for configuration of path
+    in `setup.cfg` file.
+  - Fix python 3 bug: TypeError: Can't mix strings and bytes in path components
+
+	
 0.1.10:
 - Added better backwards compatibility for previous changes.
 - Simplified nbinit theme management and use 'default' theme as default.

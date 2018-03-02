@@ -268,6 +268,36 @@ There are a couple of subtle points here that should be mentioned.
 
 __ https://selenic.com/pipermail/mercurial-devel/2011-December/036480.html
 
+Releases
+++++++++
+
+To release a new version be sure to do the following. (The examples use revision
+numbers etc. for release 0.1.11.)
+
+1. Make sure your code works and that the tests pass.  Pull any open issues
+	 into the main release branch, closing those issue branches.
+2. Commit all your changes. (This is an optional commit, if the changes are
+	 small, this can be rolled in with the following commit.)
+3. Remove the ``'dev'`` from the version in ``setup.py`` (i.e.
+	 ``'0.1.11dev' -> '0.1.11'``).
+4. Add a note about the changes in ``CHANGES.txt``.
+5. Commit the changes.  Start the commit message with::
+
+	   hg com -m "REL: 0.1.11 ..."
+
+6. Create a pull request (PR) on bitbucket to pull this branch to ``default`` and
+	 make sure to specify to close the branch on pull.
+7. Check, approve, and merge the PR.
+8. Pull the merge from bitbucket to your development machine but **do not update**.
+9. Update the version in ``setup.py`` to ``'0.1.12dev'`` or whatever is relevant.
+10. From the previous commit (the last commit on branch ``0.1.11`` in this case),
+	  change the branch::
+
+	    hg branch 0.1.12
+			
+11. Commit and optionally push.  Now you are ready to work on new changes.
+
+
 
 Notes
 =====
