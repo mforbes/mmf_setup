@@ -1,9 +1,8 @@
 """Importing this module will insert HGROOT to the start of sys.path."""
 import subprocess
 
-
 try:
-    HGROOT = subprocess.check_output(['hg', 'root']).strip()
+    HGROOT = subprocess.check_output(['hg', 'root']).strip().decode("utf-8") 
     paths = [HGROOT]
     import mmf_setup
     mmf_setup.ROOT = HGROOT
