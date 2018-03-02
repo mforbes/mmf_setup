@@ -1,10 +1,17 @@
 import contextlib
 import copy
+try:
+    from importlib import reload
+except ImportError:
+    pass
+
 import os.path
 import shutil
 import subprocess
 import sys
 import tempfile
+
+import mmf_setup.set_path.hgroot
 
 import pytest
 
@@ -18,10 +25,11 @@ def tmpdir():
 
 
 def test_set_path_hgroot():
-    HGROOT = subprocess.check_output(['hg', 'root']).strip()
-    while HGROOT not in sys.path:
+    HGROOT = subprocess.check_output(['hg', 'root']).strip().decode('utf8')
+    while HGROOT in sys.path:
         sys.path.remove(HGROOT)
-    import mmf_setup.set_path.hgroot
+        
+    reload(mmf_setup.set_path.hgroot)
     assert HGROOT == sys.path[0]
     assert mmf_setup.HGROOT == HGROOT
     
