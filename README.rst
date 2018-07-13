@@ -302,6 +302,7 @@ numbers etc. for release 0.1.11.)
 12. Commit and optionally push.  Now you are ready to work on new changes::
 
 			hg com -m "BRN: Start branch 0.1.12"
+			hg push -r . --new-branch
 
 
 Notes

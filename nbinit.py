@@ -35,6 +35,9 @@ except ImportError:
 \DeclareMathOperator{\erf}{erf}
 \DeclareMathOperator{\erfi}{erfi}
 \DeclareMathOperator{\sech}{sech}
+\DeclareMathOperator{\sn}{sn}
+\DeclareMathOperator{\cn}{cn}
+\DeclareMathOperator{\dn}{dn}
 \DeclareMathOperator{\sgn}{sgn}
 \DeclareMathOperator{\order}{O}
 \DeclareMathOperator{\diag}{diag}
