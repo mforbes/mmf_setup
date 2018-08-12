@@ -15,6 +15,7 @@ This module provides customization for Jupyter notebooks including
 styling and some pre-defined MathJaX macros.
 """
 import importlib
+import logging
 import os.path
 import shutil
 import subprocess
@@ -22,8 +23,12 @@ import sys
 import tempfile
 import traceback
 
-from IPython.display import HTML, Javascript, display, clear_output
-import notebook
+try:
+    from IPython.display import HTML, Javascript, display, clear_output
+    import notebook
+except ImportError:
+    HTML = Javascript = display = clear_output = None
+    notebook = None
 
 __all__ = ['nbinit']
 
@@ -61,6 +66,25 @@ $( document ).ready(code_toggle);
 """
 
 
+class MyFormatter(logging.Formatter):
+    """Custom logging formatter for sending info to Jupyter console."""
+    def __init__(self):
+        logging.Formatter.__init__(
+            self,
+            fmt="[{levelname[0]} {asctime} {name}] {message}",
+            datefmt="%H:%M:%S",
+            style="{")
+        
+    def format(self, record):
+        if record.levelno >= logging.WARNING:
+            _fmt = ("\n" + " "*14).join([self._fmt, "{filename}:{lineno}"])
+        else:
+            _fmt = self._fmt
+
+        self._fmt = self._style._fmt = _fmt
+        return logging.Formatter.format(self, record)
+
+
 def nbinit(theme='default', hgroot=True, toggle_code=False, debug=False, quiet=False):
     """Initialize a notebook.
 
@@ -88,6 +112,27 @@ def nbinit(theme='default', hgroot=True, toggle_code=False, debug=False, quiet=F
     """
     clear_output()
 
+    ####################
+    # Logging to jupyter console.
+    # Not exactly sure why this works, but here we add a handler
+    # to send output to the main console.
+    # https://stackoverflow.com/a/39331977/1088938
+    logger = logging.getLogger()
+    handler = None
+    for h in logger.handlers:
+        if hasattr(h, 'stream') and h.stream.fileno() == 1:
+            handler = h
+            break
+    if not handler:
+        handler = logging.StreamHandler(os.fdopen(1, "w"))
+        logger.addHandler(handler)
+            
+    handler.setFormatter(MyFormatter())
+    handler.setLevel('DEBUG')
+    logger.setLevel('DEBUG')
+
+    ####################
+    # Accumulate output for notebook to setup MathJaX etc.
     res = []
 
     def _load(ext, theme=theme):
@@ -198,9 +243,9 @@ class Install(object):
         return type is not None
 
     def install_all(self):
-        self.install_calico_tools()
+        # self.install_calico_tools()
         # self.install_drag_and_drop()
-        self.install_mathjax()
+        # self.install_mathjax()
         self.install_rise()
 
     def install_calico_tools(self):
