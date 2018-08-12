@@ -71,18 +71,15 @@ class MyFormatter(logging.Formatter):
     def __init__(self):
         logging.Formatter.__init__(
             self,
-            fmt="[{levelname[0]} {asctime} {name}] {message}",
-            datefmt="%H:%M:%S",
-            style="{")
+            fmt="[%(levelname)s %(asctime)s %(name)s] %(message)s",
+            datefmt="%H:%M:%S")
         
     def format(self, record):
+        record.levelname = record.levelname[0]
+        msg = logging.Formatter.format(self, record)
         if record.levelno >= logging.WARNING:
-            _fmt = ("\n" + " "*14).join([self._fmt, "{filename}:{lineno}"])
-        else:
-            _fmt = self._fmt
-
-        self._fmt = self._style._fmt = _fmt
-        return logging.Formatter.format(self, record)
+            msg += "\n{}{}:{}".format(" "*14, record.filename, record.lineno)
+        return msg
 
 
 def nbinit(theme='default', hgroot=True, toggle_code=False, debug=False, quiet=False):
