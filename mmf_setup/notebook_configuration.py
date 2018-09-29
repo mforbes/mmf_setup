@@ -66,6 +66,10 @@ $( document ).ready(code_toggle);
 """
 
 
+def log(msg, level=logging.INFO):
+    logging.getLogger(__name__).log(level=level, msg=msg)
+
+
 class MyFormatter(logging.Formatter):
     """Custom logging formatter for sending info to Jupyter console."""
     def __init__(self):
@@ -167,7 +171,10 @@ def nbinit(theme='default', hgroot=True, toggle_code=False, debug=False, quiet=F
         _display(_TOGGLE_CODE)
 
     if hgroot:
-        from .set_path import hgroot
+        try:
+            from .set_path import hgroot
+        except OSError:
+            log("Could not set HGROOT", level=logging.WARNING)
 
     if debug:
         return res
