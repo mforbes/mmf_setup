@@ -1,8 +1,14 @@
 """Importing this module will insert HGROOT to the start of sys.path."""
+import logging
 import subprocess
 
+
+def log(msg, level=logging.INFO):
+    logging.getLogger(__name__).log(level=level, msg=msg)
+
+
 try:
-    HGROOT = subprocess.check_output(['hg', 'root']).strip().decode("utf-8") 
+    HGROOT = subprocess.check_output(['hg', 'root']).strip().decode("utf-8")
     paths = [HGROOT]
     import mmf_setup
     mmf_setup.ROOT = HGROOT
@@ -14,4 +20,4 @@ try:
             
 except subprocess.CalledProcessError:
     # Could not run hg or not in a repo.
-    pass
+    log("Could not set HGROOT", level=logging.WARNING)

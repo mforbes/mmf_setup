@@ -171,10 +171,7 @@ def nbinit(theme='default', hgroot=True, toggle_code=False, debug=False, quiet=F
         _display(_TOGGLE_CODE)
 
     if hgroot:
-        try:
-            from .set_path import hgroot
-        except OSError:
-            log("Could not set HGROOT", level=logging.WARNING)
+        from .set_path import hgroot
 
     if debug:
         return res
