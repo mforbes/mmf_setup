@@ -9,6 +9,7 @@ will be symlinked to the specified location.  If a file
 already exists, it will be backed up (copied to a file with a .bak extension).
 Existing symlinks will be overwritten.
 """
+from __future__ import print_function
 
 import os.path
 import re
@@ -92,7 +93,7 @@ def yes_no(default=""):
     
     ans = validate(raw_input_default(prompt, default))
     while ans is None:
-        print 'Please answer "yes" or "no".'
+        print('Please answer "yes" or "no".')
         ans = validate(raw_input_default(prompt, default))
     return ans
 
@@ -128,11 +129,12 @@ def execute(command, cwd=None):
                                   shell=True,
                                   cwd=cwd)
         if retcode < 0:
-            print >>sys.stderr, "Child was terminated by signal", -retcode
+            print("Child was terminated by signal {}".format(-retcode),
+                  file=sys.stderr)
         else:
-            print >>sys.stderr, "Child returned", retcode
-    except OSError, e:
-        print >>sys.stderr, "Execution failed:", e
+            print("Child returned {}".format(retcode), file=sys.stderr)
+    except OSError as e:
+        print("Execution failed: {}".format(e), file=sys.stderr)
 
 
 def do(cmds, mesg=None, query=None, options=options):
@@ -143,29 +145,29 @@ def do(cmds, mesg=None, query=None, options=options):
     """
     success = True
     if options.verbose and mesg is not None:
-        print mesg
+        print(mesg)
     if options.action:
         perform = True
         if options.interactive:
             if query is None:
-                print "Perform the following commands?"
+                print("Perform the following commands?")
                 for c in cmds:
-                    print c
+                    print(c)
             else:
-                print query
+                print(query)
             perform = yes_no("yes")
         if perform:
             for c in cmds:
                 if options.verbose:
-                    print c
+                    print(c)
                 try:
                     exec(c)
-                except Exception, e:
-                    print >>sys.stderr, "Command "+c+" failed:", e
+                except Exception as e:
+                    print("Command {} failed: {}".format(c, e),  file=sys.stderr)
                     success = False
     else:
         for c in cmds:
-            print c
+            print(c)
     return (success)
 
 
@@ -173,13 +175,13 @@ def os_do(action, options=options):
     if options.action:
         perform = True
         if options.interactive:
-            print "Perform the following action?"
-            print action
+            print("Perform the following action?")
+            print(action)
             perform = yes_no("yes")
         if perform:
             execute(action)
     else:
-        print action
+        print(action)
 
 
 def backup(file):
@@ -210,7 +212,7 @@ def main():
     home_dir = os.path.expanduser(options.home_dir)
     check_access(home_dir, os.F_OK | os.R_OK | os.W_OK | os.X_OK)
     if options.verbose:
-        print "Using <home> = " + home_dir
+        print("Using <home> = {}".format(home_dir))
 
     if not args:
         args = ["."]
