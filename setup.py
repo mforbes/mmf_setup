@@ -30,19 +30,15 @@ test_requires = [
     'pytest-cov>=2.2.0',
     'pytest-flake8',
     'coverage',
-    'flake8',
-    'pep8==1.5.7',     # Needed by flake8: dependency resolution issue if not pinned
 ]
 
 extras_require = {
-    'nbextensions': ['Python-contrib-nbextensions'],
+    'nbextensions': [
+        'jupyter_contrib_nbextensions'
+    ]
+
 }
 
-dependency_links = [
-    'git+https://github.com/' +
-    'ipython-contrib/IPython-notebook-extensions.git' +
-    '#egg=Python-contrib-nbextensions-alpha',
-]
 
 # Remove NAME from sys.modules so that it gets covered in tests. See
 # http://stackoverflow.com/questions/11279096
@@ -65,7 +61,6 @@ setup(name=NAME,
       install_requires=install_requires,
       tests_require=test_requires,
       extras_require=extras_require,
-      dependency_links=dependency_links,
 
       scripts=['bin/mmf_setup', 'bin/mmf_initial_setup', 'bin/mmf_setup_bash.py'],
 
