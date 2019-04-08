@@ -6,8 +6,9 @@ package:
   version: "{{ version }}"
 
 source:
-  hg_rev: {{ version }}
-  hg_url: https://hg@bitbucket.org/mforbes/mmf_setup
+  path: .
+  #hg_rev: {{ version }}
+  #hg_url: https://hg@bitbucket.org/mforbes/mmf_setup
 
 build:
   number: 0
@@ -25,7 +26,8 @@ requirements:
 
 test:
   source_files:
-    - {{ name }}
+    - '*'
+    - '.*'
   imports:
     - mmf_setup
     - mmf_setup.set_path
@@ -36,7 +38,7 @@ test:
     - pytest-cov >=2.2.0
     - pytest-flake8
   commands:
-    - py.test
+    - make test
 
 about:
   home: https://bitbucket.org/mforbes/mmf_setup

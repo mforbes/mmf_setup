@@ -42,12 +42,12 @@
   Symlink ./home/.bash_aliases exists.
   os.remove('./home/.bash_aliases')
   os.symlink('*/config_files/smc/bash_aliases', './home/.bash_aliases') (glob)
-  Symlink ./home/.hgignore exists.
-  os.remove('./home/.hgignore')
-  os.symlink('*/config_files/smc/hgignore', './home/.hgignore') (glob)
   Symlink ./home/.hgrc exists.
   os.remove('./home/.hgrc')
   os.symlink('*/config_files/smc/hgrc', './home/.hgrc') (glob)
+  Symlink ./home/.hgignore exists.
+  os.remove('./home/.hgignore')
+  os.symlink('*/config_files/smc/hgignore', './home/.hgignore') (glob)
   Symlink ./home/.inputrc exists.
   os.remove('./home/.inputrc')
   os.symlink('*/config_files/smc/inputrc', './home/.inputrc') (glob)

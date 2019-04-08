@@ -15,10 +15,6 @@ from setuptools import setup, find_packages
 
 NAME = "mmf_setup"
 
-setup_requires = [
-    'pytest-runner'
-]
-
 install_requires = [
     'nbstripout>=0.2.0',
     'python-hglib',
@@ -57,7 +53,6 @@ setup(name=NAME,
       version='0.1.13dev',
       packages=find_packages(exclude=['tests']),
 
-      setup_requires=setup_requires,
       install_requires=install_requires,
       tests_require=test_requires,
       extras_require=extras_require,
