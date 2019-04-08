@@ -24,9 +24,9 @@
   $ mmf_initial_setup -n --home="./home" "${SRC}"
   backup('./home/.bash_aliases')
   os.symlink('*/config_files/smc/bash_aliases', './home/.bash_aliases') (glob)
-  os.symlink('*/config_files/smc/hgignore', './home/.hgignore') (glob)
   os.symlink('*/config_files/smc/hgrc', './home/.hgrc') (glob)
   os.symlink('*/config_files/smc/inputrc', './home/.inputrc') (glob)
+  os.symlink('*/config_files/smc/hgignore', './home/.hgignore') (glob)
   $ mmf_initial_setup --home="./home" "${SRC}"
   $ ls -aF ./home
   ./
@@ -45,12 +45,12 @@
   Symlink ./home/.hgrc exists.
   os.remove('./home/.hgrc')
   os.symlink('*/config_files/smc/hgrc', './home/.hgrc') (glob)
-  Symlink ./home/.hgignore exists.
-  os.remove('./home/.hgignore')
-  os.symlink('*/config_files/smc/hgignore', './home/.hgignore') (glob)
   Symlink ./home/.inputrc exists.
   os.remove('./home/.inputrc')
   os.symlink('*/config_files/smc/inputrc', './home/.inputrc') (glob)
+  Symlink ./home/.hgignore exists.
+  os.remove('./home/.hgignore')
+  os.symlink('*/config_files/smc/hgignore', './home/.hgignore') (glob)
   $ ls -aF ./home
   ./
   ../
