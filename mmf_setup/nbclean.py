@@ -352,8 +352,8 @@ class NBCleanState(object):
                     self.bookmark(bookmark, delete=True)
                 else:
                     self.msg(
-                        "Aborting... bookmark {} exists! ".format(bookmark) +
-                        "(run 'hg nbclean --force' to force cleaning)",
+                        "Aborting... bookmark {} exists! ".format(bookmark)
+                        + "(run 'hg nbclean --force' to force cleaning)",
                         err=True)
                     sys.exit(-1)
 
@@ -365,7 +365,7 @@ class NBCleanState(object):
             else:
                 try:
                     self.client.commit(message="CHK: auto checkpoint")
-                except hglib.error.CommandError, err:
+                except hglib.error.CommandError as err:
                     if err.ret != 1:
                         self.msg(
                             "\n".join([
