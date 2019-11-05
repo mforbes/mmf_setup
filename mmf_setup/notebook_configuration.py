@@ -25,10 +25,8 @@ import traceback
 
 try:
     from IPython.display import HTML, Javascript, display, clear_output
-    import notebook
 except ImportError:
     HTML = Javascript = display = clear_output = None
-    notebook = None
 
 __all__ = ['nbinit']
 
@@ -225,6 +223,7 @@ class Install(object):
         self.old_ipython_dir = None
 
     def install_nbextension(self, name):
+        import notebook
         notebook.install_nbextension(name, user=self.user)
 
     def __enter__(self):
