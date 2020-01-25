@@ -275,7 +275,18 @@ To release a new version be sure to do the following. (The examples use revision
 numbers etc. for release 0.1.11.)
 
 1. Make sure your code works and that the tests pass.  Pull any open issues
-	 into the main release branch, closing those issue branches.
+	 into the main release branch, closing those issue branches.  You
+   can get a debug environment by running::
+
+     conda debug .
+
+   After you activate the development library, install pytest::
+   
+     conda install pytest-cov pytest-flake8 python-hglib
+     export HGPYTHON3=True
+     unset PIP_NO_INDEX
+     pip install mercurial
+     
 2. Commit all your changes. (This is an optional commit, if the changes are
 	 small, this can be rolled in with the following commit.)
 3. Remove the ``'dev'`` from the version in ``setup.py`` (i.e.
