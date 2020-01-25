@@ -25,7 +25,7 @@ import traceback
 
 try:
     from IPython.display import HTML, Javascript, display, clear_output
-except ImportError:
+except (ImportError, KeyError):
     HTML = Javascript = display = clear_output = None
 
 __all__ = ['nbinit']
