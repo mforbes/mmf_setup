@@ -1,5 +1,5 @@
 {% set name = "mmf_setup" %}
-{% set version = "0.1.12" %}
+{% set version = "0.3.0dev" %}
 
 package:
   name: "{{ name|lower }}"
@@ -17,11 +17,11 @@ build:
 
 requirements:
   host:
-    - python
+    - python >=3
     - setuptools
     - nbstripout >=0.2.0
   run:
-    - python
+    - python >=3
     - nbstripout >=0.2.0
     - python-hglib
 
@@ -38,6 +38,7 @@ test:
     - pytest >=2.8.1
     - pytest-cov >=2.2.0
     - pytest-flake8
+    - mercurial >=5.2
   commands:
     - make test
 
