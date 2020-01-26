@@ -45,6 +45,7 @@ import inspect
 import operator
 import os
 import shlex
+import subprocess
 import sys
 
 import hglib
@@ -54,15 +55,13 @@ from mercurial import commands, hook, registrar, cmdutil
 
 from mercurial.i18n import _    # International support
 
-import nbstripout
-
 cmdtable = {}
 
 try:
     command = registrar.command(cmdtable)
 except AttributeError:
     command = cmdutil.command(cmdtable)
-    
+
 
 testedwith = '3.6.3'
 
@@ -83,6 +82,13 @@ class Status(object):
     unknown = []
     ignored = []
     clean = []
+    
+    def __repr__(self):
+        return "Status({})".format(
+            ','.join([
+                "{}={}".format(_k, repr(getattr(self, _k)))
+                for _k in dir(self)
+                if not _k.startswith('_')]))
 
 
 def cleandoc(doc):
@@ -113,7 +119,7 @@ class NBCleanState(object):
         self.ui = ui
         self.repo = repo
         self.client = client
-        
+
         self.devnull = open(os.devnull, 'w')
 
         # The following tags/branch names are used:
@@ -172,7 +178,7 @@ class NBCleanState(object):
             inchannels = {}
             if isinstance(cmd, str):
                 cmd = shlex.split(cmd)
-            cmd = map(b, cmd)
+            cmd = list(map(b, cmd))
             self.result = self.client.runcommand(
                 cmd, inchannels, outchannels)
             if fout is None:
@@ -198,9 +204,9 @@ class NBCleanState(object):
         msg = msg + "\n"
 
         if err:
-            self.ui.warn(msg)
+            self.ui.warn(msg.encode())
         else:
-            self.ui.status(msg)
+            self.ui.status(msg.encode())
 
     def isquiet(self):
         """Return True if the user has specified the global -q flag."""
@@ -212,9 +218,9 @@ class NBCleanState(object):
         else:
             status = Status()
             res = self.client.status(added=True, modified=True, clean=True)
-            status.added = [_f for _s, _f in res if _s == 'A']
-            status.clean = [_f for _s, _f in res if _s == 'C']
-            status.modified = [_f for _s, _f in res if _s == 'M']
+            status.added = [_f for _s, _f in res if _s == b'A']
+            status.clean = [_f for _s, _f in res if _s == b'C']
+            status.modified = [_f for _s, _f in res if _s == b'M']
         return status
 
     def isclean(self):
@@ -231,7 +237,7 @@ class NBCleanState(object):
             return not (status.modified or status.added or status.removed
                         or subs or self.repo.dirstate.copies())
         else:
-            return self.client.summary()['commit']
+            return self.client.summary()[b'commit']
 
     def setparent(self, parent, ferr=None):
         """Set the parent node without changing the working copy.
@@ -253,7 +259,9 @@ class NBCleanState(object):
                 opts.append('-i')
             self.dispatch('bookmarks {} {}'.format(' '.join(opts), name))
         else:
-            self.client.bookmark(name, inactive=inactive, delete=delete)
+            if delete:
+                inactive = False
+            self.client.bookmark(name.encode(), inactive=inactive, delete=delete)
 
     def bookmarks(self):
         """Return the set of bookmark names"""
@@ -282,16 +290,16 @@ class NBCleanState(object):
             return self.dispatch('revert {} -r {} {}'.format(
                 ' '.join(opts), rev, ' '.join(files)))
         else:
-            files = list(files)
+            files = [_f.encode() for _f in files]
             return not self.client.revert(
-                files, rev=rev, all=all, nobackup=nobackup)
+                files, rev=rev.encode(), all=all, nobackup=nobackup)
 
     def identify(self):
         """Return the revision number of the parent node."""
         if API:
             raise NotImplementedError
         else:
-            return self.client.identify(id=True)[:12]
+            return self.client.identify(id=True)[:12].decode()
 
     def update(self, rev, clean=True, quiet=True):
         """Update (clean by default) quietly"""
@@ -324,7 +332,7 @@ class NBCleanState(object):
             with self.suppress_output:
                 return self.dispatch('branch -q "{}"'.format(name))
         else:
-            self.client.branch(name)
+            self.client.branch(name.encode())
 
     def checkpoint(self, force=False):
         """Create a checkpoint of the current working copy.
@@ -364,19 +372,19 @@ class NBCleanState(object):
                     self.dispatch('tag -fl {}'.format(self.tags['new']))
             else:
                 try:
-                    self.client.commit(message="CHK: auto checkpoint")
+                    self.client.commit(message=b"CHK: auto checkpoint")
                 except hglib.error.CommandError as err:
                     if err.ret != 1:
                         self.msg(
                             "\n".join([
                                 "Aborting... could not create checkpoint commmit!",
-                                err.out.rstrip(),
-                                err.err.rstrip()]),
+                                err.out.rstrip().decode(),
+                                err.err.rstrip().decode()]),
                             err=True)
                         sys.exit(-1)
                 else:
                     try:
-                        self.client.tag(names=self.tags['new'],
+                        self.client.tag(names=self.tags['new'].encode(),
                                         local=True, force=True)
                     except hglib.error.CommandError:
                         pass
@@ -401,7 +409,10 @@ class NBCleanState(object):
         self.ui.quiet = _q
 
     def quiet_commit(self, message):
-        """Helper function that does a quiet commit without hooks"""
+        """Helper function that does a quiet commit without hooks.
+
+        Returns True if a commit was made.
+        """
         # For some reason, global options like quiet=True
         # cannot be passed through the commands.commit
         # interface.  We could call self.dispatch('_commit') as an
@@ -415,9 +426,9 @@ class NBCleanState(object):
             try:
                 res = self.client.commit(message=message)
             except hglib.error.CommandError:
-                res = True
+                res = False
 
-        return not res
+        return bool(res)
 
     def run_with_hooks(self, cmd, *pats, **opts):
         """Runs the specified command with the pre and post hooks."""
@@ -465,11 +476,11 @@ class NBCleanState(object):
             return self.ui.config(section, name, default=default)
         else:
             try:
-                config = self.client.config('nbclean')
+                config = self.client.config(b'nbclean')
             except hglib.error.CommandError:
                 config = []
 
-            res = dict((_key, _value)
+            res = dict((_key.decode(), _value.decode())
                        for _section, _key, _value
                        in config)
             return res.get(name, default)
@@ -514,17 +525,15 @@ class NBCleanState(object):
         self.revert(self.tags['checkpoint'])
 
         # hg status -man0 | xargs -0 nbstripout
+
         status = self.status(clean=clean_all)
         filenames = status.modified + status.added
         if clean_all:
             filenames.extend(status.clean)
-        notebooks = [_f for _f in filenames if _f.endswith('.ipynb')]
+        notebooks = [_f.decode() for _f in filenames if _f.endswith(b'.ipynb')]
         if notebooks:
             self.msg('cleaning {}'.format(', '.join(notebooks)))
-            _argv = sys.argv
-            sys.argv = ['nbstripout'] + notebooks
-            nbstripout.main()
-            sys.argv = _argv
+            subprocess.run(args=['nbstripout'] + notebooks, shell=False)
         return True
 
     def commit_output(self, branch):
@@ -601,11 +610,11 @@ def _cmd(opts=[], synopsis=_(''), **kw):
             if not hasattr(ui, '_nbclean_state'):
                 args = dict(ui=ui, repo=repo)
                 if not API:
-                    args['client'] = hglib.open(repo.pathto(''))
+                    args['client'] = hglib.open(repo.pathto(b''))
                 ui._nbclean_state = NBCleanState(**args)
             return f(ui._nbclean_state, *pats, **opts)
 
-        name = f.func_name
+        name = f.__name__.encode()
         _COMMANDS.append((name, opts, synopsis, kw, wrapper))
         wrapper.__doc__ = cleandoc(f.__doc__)
         return wrapper
@@ -620,11 +629,11 @@ def nbrestore(state):
        hg checkpoint
     """
     return state.nbrestore()
-    
 
-@_cmd(opts=[('', 'clean-all', False,
+
+@_cmd(opts=[(b'', b'clean-all', False,
              _('clean all managed .ipynb files')),
-            ('f', 'force', False,
+            (b'f', b'force', False,
              _('force removal of managed bookmarks etc.'))])
 def nbclean(state, clean_all=False, force=False):
     """Clean output from all added or modified .ipynb notebooks.
@@ -650,12 +659,12 @@ def nbclean(state, clean_all=False, force=False):
 
 
 # Get standard commit options from commands.table
-@_cmd(opts=commands.table['^commit|ci'][1]
-      + [('', 'clean-all', False,
+@_cmd(opts=commands.table[b'commit|ci'][1]
+      + [(b'', b'clean-all', False,
           _('clean all managed .ipynb files')),
-         ('b', 'branch', '',
+         (b'b', b'branch', b'',
           _('commit output to this branch (create if needed)'))],
-      synopsis=commands.table['^commit|ci'][2],
+      synopsis=commands.table[b'commit|ci'][2],
       inferrepo=True)
 def ccommit(state, *pats, **opts):
     """Clean cleaned notebooks.
@@ -681,8 +690,8 @@ def ccommit(state, *pats, **opts):
             state.commit_output(branch)
 
 
-@_cmd(opts=commands.table['^update|up|checkout|co'][1],
-      synopsis=commands.table['^update|up|checkout|co'][2])
+@_cmd(opts=commands.table[b'update|up|checkout|co'][1],
+      synopsis=commands.table[b'update|up|checkout|co'][2])
 def cupdate(state, *pats, **opts):
     """Like hg update but restore cleaned notebooks with their output.
 
@@ -693,12 +702,12 @@ def cupdate(state, *pats, **opts):
     rev = state.identify()
     auto_commits = sorted([
         _r for _r in state.client.log('children(.)')
-        if _r[-2] == _AUTOCOMMIT_MESSAGE
+        if _r[-2].decode() == _AUTOCOMMIT_MESSAGE
     ], key=operator.attrgetter('date'))
     if not auto_commits:
         return
     state.msg("updating notebook outputs")
-    auto_node = auto_commits[-1].node
+    auto_node = auto_commits[-1].node.decode()
 
     # Do this to get a nice message
     state.update(rev=auto_node, clean=opts['clean'], quiet=False)
@@ -707,9 +716,9 @@ def cupdate(state, *pats, **opts):
 
 
 @_cmd(opts=[
-    ('', 'clean-all', False,
+    (b'', b'clean-all', False,
      _('clean all managed .ipynb files')),
-    ('b', 'branch', '',
+    (b'b', b'branch', b'',
      _('commit output to this branch (create if needed)'))])
 def crecord(state, *pats, **opts):
     """Record cleaned notebooks.
@@ -729,10 +738,10 @@ def crecord(state, *pats, **opts):
 
 
 # Get standard status options from commands.table
-@_cmd(opts=commands.table['^status|st'][1] +
-      [('', 'clean-all', False,
+@_cmd(opts=commands.table[b'status|st'][1] +
+      [(b'', b'clean-all', False,
         _('clean all managed .ipynb files'))],
-      synopsis=commands.table['^status|st'][2])
+      synopsis=commands.table[b'status|st'][2])
 def cstatus(state, *pats, **opts):
     """Status of cleaned notebooks.
 
@@ -745,10 +754,10 @@ def cstatus(state, *pats, **opts):
 
 
 # Get standard diff options from commands.table
-@_cmd(opts=commands.table['^diff'][1] +
-      [('', 'clean-all', False,
+@_cmd(opts=commands.table[b'diff'][1] +
+      [(b'', b'clean-all', False,
         _('clean all managed .ipynb files'))],
-      synopsis=commands.table['^diff'][2])
+      synopsis=commands.table[b'diff'][2])
 def cdiff(state, *pats, **opts):
     """Diff of cleaned notebooks.
 

@@ -274,18 +274,28 @@ Releases
 To release a new version be sure to do the following. (The examples use revision
 numbers etc. for release 0.1.11.)
 
-1. Make sure your code works and that the tests pass.  Pull any open issues
-	 into the main release branch, closing those issue branches.  You
-   can get a debug environment by running::
+1. Make sure your code works and that the tests pass. Pull any open issues
+	 into the main release branch, closing those issue branches.
+
+   To run the tests, create a bare environment and install
+   everything::
+
+     conda env remove -n tst3        # If needed
+     conda create -yn tst3 python=3
+     conda activate tst3
+     pip install -e .[test]
+     py.test
+     make test
+
+   If you want to test things from conda, you can get a debug
+   environment by running::
 
      conda debug .
 
    After you activate the development library, install pytest::
-   
-     conda install pytest-cov pytest-flake8 python-hglib
-     export HGPYTHON3=True
-     unset PIP_NO_INDEX
-     pip install mercurial
+
+     cd /data/apps/conda/conda-bld/debug_.../work && source build_env_setup.sh
+     pip install -e .[test]
      
 2. Commit all your changes. (This is an optional commit, if the changes are
 	 small, this can be rolled in with the following commit.)

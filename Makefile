@@ -18,4 +18,7 @@ help:
 test:
 	cd tests && MMF_SETUP=$(MMF_SETUP) $(PYTHON) run-tests.py --with-hg=$(HG) $(TESTFLAGS)
 
+test-all: test
+	py.test
+
 .PHONY: help test test-all

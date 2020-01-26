@@ -1,4 +1,6 @@
   $ cat <<EOF >> $HGRCPATH
+  > [ui]
+  > ignore = $TESTDIR/hgignore  
   > %include $TESTDIR/hgrc
   > EOF
 
