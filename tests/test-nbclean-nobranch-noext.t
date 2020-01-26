@@ -5,6 +5,7 @@
   > interactive = False
   > mergemarkers = detailed
   > promptecho = True
+  > ignore = $TESTDIR/hgignore  
   > [extensions]
   > graphlog =
   > strip =
@@ -134,7 +135,7 @@ Commit a dirty notebook
   diff -r * N.ipynb (glob)
   --- a/N.ipynb	* (glob)
   +++ b/N.ipynb	* (glob)
-  @@ -17,6 +17,17 @@
+  @@ -15,6 +15,15 @@
       "source": [
        "1+1"
       ]
@@ -142,9 +143,7 @@ Commit a dirty notebook
   +  {
   +   "cell_type": "code",
   +   "execution_count": null,
-  +   "metadata": {
-  +    "collapsed": false
-  +   },
+  +   "metadata": {},
   +   "outputs": [],
   +   "source": [
   +    "2+2"

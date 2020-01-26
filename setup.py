@@ -8,20 +8,21 @@ distribution to have the tools I commonly use.
 **Issues:**
   https://bitbucket.org/mforbes/mmf_setup/issues
 """
+import io
+from glob import glob
 import os.path
+from os.path import basename, dirname, join, splitext
+
 import sys
 
 from setuptools import setup, find_packages
 
 NAME = "mmf_setup"
 
-setup_requires = [
-    'pytest-runner'
-]
-
 install_requires = [
     'nbstripout>=0.2.0',
     'python-hglib',
+    'twine',
 ]
 
 test_requires = [
@@ -30,19 +31,20 @@ test_requires = [
     'pytest-cov>=2.2.0',
     'pytest-flake8',
     'coverage',
-    'flake8',
-    'pep8==1.5.7',     # Needed by flake8: dependency resolution issue if not pinned
+    'mercurial',
+    'twine',
 ]
 
 extras_require = {
-    'nbextensions': ['Python-contrib-nbextensions'],
+    # Hack so that pip install -e .[test] works for testing.
+    # https://inneka.com/programming/python/pip-install-test-dependencies-for-tox-from-setup-py/
+    'test': test_requires,
+    'nbextensions': [
+        'jupyter_contrib_nbextensions'
+    ]
+
 }
 
-dependency_links = [
-    'git+https://github.com/' +
-    'ipython-contrib/IPython-notebook-extensions.git' +
-    '#egg=Python-contrib-nbextensions-alpha',
-]
 
 # Remove NAME from sys.modules so that it gets covered in tests. See
 # http://stackoverflow.com/questions/11279096
@@ -51,22 +53,29 @@ for mod in sys.modules.keys():
         del sys.modules[mod]
 del mod
 
+
+def read(*names, **kwargs):
+    with io.open(
+        join(dirname(__file__), *names),
+        encoding=kwargs.get('encoding', 'utf8')
+    ) as fh:
+        return fh.read()
+
+
 # Get the long description from the README.rst file
-_HERE = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(_HERE, 'README.rst')) as _f:
-    LONG_DESCRIPTION = _f.read()
+LONG_DESCRIPTION = "\n".join([
+    read('README.rst'),
+    read('CHANGES.txt')])
 
-
+    
 setup(name=NAME,
-      version='0.1.12',
-      packages=find_packages(exclude=['tests']),
-
-      setup_requires=setup_requires,
+      version='0.3.0',
+      packages=find_packages('src'),
+      package_dir={'': 'src'},
+      py_modules=[splitext(basename(_path))[0] for _path in glob('src/*.py')],
       install_requires=install_requires,
       tests_require=test_requires,
       extras_require=extras_require,
-      dependency_links=dependency_links,
-
       scripts=['bin/mmf_setup', 'bin/mmf_initial_setup', 'bin/mmf_setup_bash.py'],
 
       # Include data from MANIFEST.in
@@ -78,6 +87,7 @@ setup(name=NAME,
       url='https://bitbucket.org/mforbes/mmf_setup',
       description="Python Tools",
       long_description=LONG_DESCRIPTION,
+      long_description_content_type='text/x-rst',
 
       license='GNU GPLv2 or any later version',
 
@@ -98,9 +108,7 @@ setup(name=NAME,
 
           # Specify the Python versions you support here. In particular, ensure
           # that you indicate whether you support Python 2, Python 3 or both.
-          'Programming Language :: Python :: 2',
-          'Programming Language :: Python :: 2.6',
-          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
       ],
 
       keywords='ipython jupyter notebook setup mercurial',

@@ -18,15 +18,15 @@
   "dest = ~/.bashrc"  will be symlinked to the specified location.  If a file
   already exists, it will be backed up (copied to a file with a .bak extension).
   Existing symlinks will be overwritten.
-  $ SRC="$RUNTESTDIR/../mmf_setup/_data/config_files/smc"
+  $ SRC="$MMF_SETUP/_data/config_files/smc"
   $ mkdir home
   $ touch home/.bash_aliases
   $ mmf_initial_setup -n --home="./home" "${SRC}"
   backup('./home/.bash_aliases')
   os.symlink('*/config_files/smc/bash_aliases', './home/.bash_aliases') (glob)
-  os.symlink('*/config_files/smc/hgignore', './home/.hgignore') (glob)
   os.symlink('*/config_files/smc/hgrc', './home/.hgrc') (glob)
   os.symlink('*/config_files/smc/inputrc', './home/.inputrc') (glob)
+  os.symlink('*/config_files/smc/hgignore', './home/.hgignore') (glob)
   $ mmf_initial_setup --home="./home" "${SRC}"
   $ ls -aF ./home
   ./
@@ -42,15 +42,15 @@
   Symlink ./home/.bash_aliases exists.
   os.remove('./home/.bash_aliases')
   os.symlink('*/config_files/smc/bash_aliases', './home/.bash_aliases') (glob)
-  Symlink ./home/.hgignore exists.
-  os.remove('./home/.hgignore')
-  os.symlink('*/config_files/smc/hgignore', './home/.hgignore') (glob)
   Symlink ./home/.hgrc exists.
   os.remove('./home/.hgrc')
   os.symlink('*/config_files/smc/hgrc', './home/.hgrc') (glob)
   Symlink ./home/.inputrc exists.
   os.remove('./home/.inputrc')
   os.symlink('*/config_files/smc/inputrc', './home/.inputrc') (glob)
+  Symlink ./home/.hgignore exists.
+  os.remove('./home/.hgignore')
+  os.symlink('*/config_files/smc/hgignore', './home/.hgignore') (glob)
   $ ls -aF ./home
   ./
   ../

@@ -5,6 +5,7 @@
   > interactive = False
   > mergemarkers = detailed
   > promptecho = True
+  > ignore = $TESTDIR/hgignore
   > [extensions]
   > graphlog =
   > mmf_setup.nbclean = $MMF_SETUP/nbclean.py
@@ -102,7 +103,7 @@ the automatic output commit will appear.
   cleaning output
   cleaning N.ipynb
   nothing changed
-  no output to commit
+  automatic commit of output
   restoring output
   $ hg glog
   o  2: test ...: Automatic commit with .ipynb output (*)   tip (glob)
@@ -133,7 +134,7 @@ Commit a dirty notebook
   diff -r * N.ipynb (glob)
   --- a/N.ipynb	Thu Jan 01 00:00:00 1970 +0000
   +++ b/N.ipynb	* (glob)
-  @@ -17,6 +17,17 @@
+  @@ -15,6 +15,15 @@
       "source": [
        "1+1"
       ]
@@ -141,9 +142,7 @@ Commit a dirty notebook
   +  {
   +   "cell_type": "code",
   +   "execution_count": null,
-  +   "metadata": {
-  +    "collapsed": false
-  +   },
+  +   "metadata": {},
   +   "outputs": [],
   +   "source": [
   +    "2+2"
@@ -156,7 +155,7 @@ Commit a dirty notebook
   cleaning output
   cleaning N.ipynb
   created new head
-  no output to commit
+  automatic commit of output
   restoring output
 
 Update to a previous clean revision and check that things work.  This

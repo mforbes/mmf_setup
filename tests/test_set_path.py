@@ -1,4 +1,3 @@
-import contextlib
 import copy
 try:
     from importlib import reload
@@ -28,16 +27,16 @@ def test_set_path_hgroot():
     HGROOT = subprocess.check_output(['hg', 'root']).strip().decode('utf8')
     while HGROOT in sys.path:
         sys.path.remove(HGROOT)
-        
+
     reload(mmf_setup.set_path.hgroot)
     assert HGROOT == sys.path[0]
     assert mmf_setup.HGROOT == HGROOT
-    
+
 
 def test_set_path_from_file_empty_path(tmpdir):
     import mmf_setup.set_path
     mmf_setup.ROOT = tmpdir
-    
+
     assert tmpdir not in sys.path
 
     original_path = copy.deepcopy(sys.path)
