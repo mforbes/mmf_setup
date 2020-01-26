@@ -18,6 +18,8 @@ NAME = "mmf_setup"
 install_requires = [
     'nbstripout>=0.2.0',
     'python-hglib',
+    'twine',
+    'readme_renderer',
 ]
 
 test_requires = [
@@ -27,6 +29,7 @@ test_requires = [
     'pytest-flake8',
     'coverage',
     'mercurial',
+    'twine',
 ]
 
 extras_require = {
@@ -54,7 +57,7 @@ with open(os.path.join(_HERE, 'README.rst')) as _f:
 
 
 setup(name=NAME,
-      version='0.1.13dev',
+      version='0.3.0',
       packages=find_packages(exclude=['tests']),
 
       install_requires=install_requires,
@@ -72,6 +75,7 @@ setup(name=NAME,
       url='https://bitbucket.org/mforbes/mmf_setup',
       description="Python Tools",
       long_description=LONG_DESCRIPTION,
+      long_description_content_type='text/x-rst',
 
       license='GNU GPLv2 or any later version',
 
@@ -92,9 +96,6 @@ setup(name=NAME,
 
           # Specify the Python versions you support here. In particular, ensure
           # that you indicate whether you support Python 2, Python 3 or both.
-          'Programming Language :: Python :: 2',
-          'Programming Language :: Python :: 2.6',
-          'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3',
       ],
 

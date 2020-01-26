@@ -1,3 +1,13 @@
+0.3.0:
+- Support python 3 - drop support for python 2.
+- Conda installable from mforbes channel on anaconda cloud.
+- Add missing default.tex theme so that nbinit() brings in math
+  definitions even if no theme is specified.
+- Fixed KeyError: 'asyncio' error on failed IPython import.
+
+0.1.13:
+- Incomplete version... everything here is rolled into 0.3.0
+
 0.1.12:
 - Made `mmf_initial_setup` python 3 compliant.
 - Added logging to nbinit() and made some slight tweaks to HGROOT.

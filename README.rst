@@ -63,8 +63,6 @@
 .. _site.USER_BASE: https://docs.python.org/2/library/site.html#site.USER_BASE
 
 
-.. default-role:: math
-
 .. This is so that I can work offline.  It should be ignored on bitbucket for
 .. example.
 
@@ -83,7 +81,7 @@ dependencies.
 In particular, I structure it for the following use-cases:
 
 1. Rapid installation and configuration of the tools I need.  For
-   example, I often use [Sage Mathcloud](cloud.sagemath.com).
+   example, I often use [CoCalc](cocalc.com).
    Whenever I create a new project, I need to perform some
    initialization.  With this project, it is simply a matter of using
    |pip|_ to install this package, and then using some of the tools.
@@ -271,11 +269,11 @@ __ https://selenic.com/pipermail/mercurial-devel/2011-December/036480.html
 Releases
 ++++++++
 
-To release a new version be sure to do the following. (The examples use revision
-numbers etc. for release 0.1.11.)
+To release a new version be sure to do the following. (The examples
+use revision numbers etc. for release 0.1.11.)
 
-1. Make sure your code works and that the tests pass. Pull any open issues
-	 into the main release branch, closing those issue branches.
+1. Make sure your code works and that the tests pass. Pull any open
+   issues into the main release branch, closing those issue branches.
 
    To run the tests, create a bare environment and install
    everything::
@@ -297,41 +295,43 @@ numbers etc. for release 0.1.11.)
      cd /data/apps/conda/conda-bld/debug_.../work && source build_env_setup.sh
      pip install -e .[test]
      
-2. Commit all your changes. (This is an optional commit, if the changes are
-	 small, this can be rolled in with the following commit.)
+2. Commit all your changes. (This is an optional commit, if the
+   changes are small, this can be rolled in with the following
+   commit.)
+   
 3. Remove the ``'dev'`` from the version in ``setup.py`` (i.e.
-	 ``'0.1.11dev' -> '0.1.11'``).
+   ``'0.1.11dev' -> '0.1.11'``).
 4. Add a note about the changes in ``CHANGES.txt``.
 5. Commit the changes.  Start the commit message with::
 
-	   hg com -m "REL: 0.1.11 ..."
+     hg com -m "REL: 0.1.11 ..."
 
-6. Create a pull request (PR) on bitbucket to pull this branch to ``default`` and
-	 make sure to specify to close the branch on pull.
+6. Create a pull request (PR) on bitbucket to pull this branch to
+   ``default`` and make sure to specify to close the branch on pull.
 7. Check, approve, and merge the PR.
 8. Upload your package to ``pypi`` with ``twine``::
 
-		 python setup.py sdist bdist_wheel
-	 
+     python setup.py sdist bdist_wheel
+     twine check dist/mmf_setup-*
+     twine upload dist/mmf_setup-*
+   
 9. Pull the merge from bitbucket to your development machine but **do not update**.
 10. Update the version in ``setup.py`` to ``'0.1.12dev'`` or whatever is relevant.
 11. From the previous commit (the last commit on branch ``0.1.11`` in this case),
-	  change the branch::
+    change the branch::
 
-	    hg branch 0.1.12
-			
+      hg branch 0.1.12
+      
 12. Commit and optionally push.  Now you are ready to work on new changes::
 
-			hg com -m "BRN: Start branch 0.1.12"
-			hg push -r . --new-branch
+      hg com -m "BRN: Start branch 0.1.12"
+      hg push -r . --new-branch
 
 
 Notes
 =====
 
 Various notes about python, IPython, etc. are stored in the docs folder.
-
-
 
 __ http://jupyter.cs.brynmawr.edu/hub/dblank/public/Jupyter%20Help.ipynb#2.-Installing-extensions
 __ https://bitbucket.org/ipre/calico/downloads/
