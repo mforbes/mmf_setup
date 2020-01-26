@@ -745,7 +745,7 @@ class Test(unittest.TestCase):
                 del env[k]
 
         # unset env related to hooks
-        for k in env.keys():
+        for k in list(env.keys()):
             if k.startswith('HG_'):
                 del env[k]
 
@@ -2126,8 +2126,8 @@ class TestRunner(object):
             f = open(hgbat, 'rb')
             data = f.read()
             f.close()
-            if b'"%~dp0..\python" "%~dp0hg" %*' in data:
-                data = data.replace(b'"%~dp0..\python" "%~dp0hg" %*',
+            if b'"%~dp0..\\python" "%~dp0hg" %*' in data:
+                data = data.replace(b'"%~dp0..\\python" "%~dp0hg" %*',
                                     b'"%~dp0python" "%~dp0hg" %*')
                 f = open(hgbat, 'wb')
                 f.write(data)

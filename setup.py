@@ -26,9 +26,13 @@ test_requires = [
     'pytest-cov>=2.2.0',
     'pytest-flake8',
     'coverage',
+    'mercurial',
 ]
 
 extras_require = {
+    # Hack so that pip install -e .[test] works for testing.
+    # https://inneka.com/programming/python/pip-install-test-dependencies-for-tox-from-setup-py/
+    'test': test_requires,
     'nbextensions': [
         'jupyter_contrib_nbextensions'
     ]

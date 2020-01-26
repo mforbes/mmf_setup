@@ -1,5 +1,13 @@
   $ cat <<EOF >> $HGRCPATH
   > %include $TESTDIR/hgrc
+  > [ui]
+  > ignore = $TESTDIR/hgignore
+  > [nbclean]
+  > output_branch = auto_output
+  > EOF
+
+  $ cat <<EOF >> $HGRCPATH
+  > %include $TESTDIR/hgrc
   > [nbclean]
   > output_branch = auto_output
   > EOF

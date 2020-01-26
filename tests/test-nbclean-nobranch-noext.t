@@ -5,6 +5,7 @@
   > interactive = False
   > mergemarkers = detailed
   > promptecho = True
+  > ignore = $TESTDIR/hgignore  
   > [extensions]
   > graphlog =
   > strip =
