@@ -2,7 +2,7 @@
 recursive-include docs *
 
 # Themes etc.
-recursive-include mmf_setup/_data *
+recursive-include src/mmf_setup/_data *
 
 # Misc
 include CHANGES.txt

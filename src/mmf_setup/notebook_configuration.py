@@ -25,10 +25,8 @@ import traceback
 
 try:
     from IPython.display import HTML, Javascript, display, clear_output
-    import notebook
-except ImportError:
+except (ImportError, KeyError):
     HTML = Javascript = display = clear_output = None
-    notebook = None
 
 __all__ = ['nbinit']
 
@@ -121,13 +119,17 @@ def nbinit(theme='default', hgroot=True, toggle_code=False, debug=False, quiet=F
     logger = logging.getLogger()
     handler = None
     for h in logger.handlers:
-        if hasattr(h, 'stream') and h.stream.fileno() == 1:
-            handler = h
-            break
+        try:
+            if h.stream.fileno() == 1:
+                handler = h
+                break
+        except Exception:
+            pass
+
     if not handler:
         handler = logging.StreamHandler(os.fdopen(1, "w"))
         logger.addHandler(handler)
-            
+ 
     handler.setFormatter(MyFormatter())
     handler.setLevel('DEBUG')
     logger.setLevel('DEBUG')
@@ -225,6 +227,7 @@ class Install(object):
         self.old_ipython_dir = None
 
     def install_nbextension(self, name):
+        import notebook
         notebook.install_nbextension(name, user=self.user)
 
     def __enter__(self):
