@@ -18,7 +18,7 @@
   "dest = ~/.bashrc"  will be symlinked to the specified location.  If a file
   already exists, it will be backed up (copied to a file with a .bak extension).
   Existing symlinks will be overwritten.
-  $ SRC="$RUNTESTDIR/../mmf_setup/_data/config_files/smc"
+  $ SRC="$MMF_SETUP/_data/config_files/smc"
   $ mkdir home
   $ touch home/.bash_aliases
   $ mmf_initial_setup -n --home="./home" "${SRC}"

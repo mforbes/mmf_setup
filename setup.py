@@ -8,7 +8,11 @@ distribution to have the tools I commonly use.
 **Issues:**
   https://bitbucket.org/mforbes/mmf_setup/issues
 """
+import io
+from glob import glob
 import os.path
+from os.path import basename, dirname, join, splitext
+
 import sys
 
 from setuptools import setup, find_packages
@@ -19,7 +23,6 @@ install_requires = [
     'nbstripout>=0.2.0',
     'python-hglib',
     'twine',
-    'readme_renderer',
 ]
 
 test_requires = [
@@ -50,20 +53,29 @@ for mod in sys.modules.keys():
         del sys.modules[mod]
 del mod
 
+
+def read(*names, **kwargs):
+    with io.open(
+        join(dirname(__file__), *names),
+        encoding=kwargs.get('encoding', 'utf8')
+    ) as fh:
+        return fh.read()
+
+
 # Get the long description from the README.rst file
-_HERE = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(_HERE, 'README.rst')) as _f:
-    LONG_DESCRIPTION = _f.read()
+LONG_DESCRIPTION = "\n".join([
+    read('README.rst'),
+    read('CHANGES.txt')])
 
-
+    
 setup(name=NAME,
-      version='0.3.0',
-      packages=find_packages(exclude=['tests']),
-
+      version='0.3.0dev',
+      packages=find_packages('src'),
+      package_dir={'': 'src'},
+      py_modules=[splitext(basename(_path))[0] for _path in glob('src/*.py')],
       install_requires=install_requires,
       tests_require=test_requires,
       extras_require=extras_require,
-
       scripts=['bin/mmf_setup', 'bin/mmf_initial_setup', 'bin/mmf_setup_bash.py'],
 
       # Include data from MANIFEST.in

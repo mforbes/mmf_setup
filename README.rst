@@ -269,6 +269,8 @@ __ https://selenic.com/pipermail/mercurial-devel/2011-December/036480.html
 Releases
 ++++++++
 
+**PyPi**
+
 To release a new version be sure to do the following. (The examples
 use revision numbers etc. for release 0.1.11.)
 
@@ -299,8 +301,12 @@ use revision numbers etc. for release 0.1.11.)
    changes are small, this can be rolled in with the following
    commit.)
    
-3. Remove the ``'dev'`` from the version in ``setup.py`` (i.e.
-   ``'0.1.11dev' -> '0.1.11'``).
+3. Remove the ``'dev'`` from the version, i.e. ``'0.1.11dev' ->
+   '0.1.11'``, in the following files::
+   
+     setup.py
+     meta.yaml
+   
 4. Add a note about the changes in ``CHANGES.txt``.
 5. Commit the changes.  Start the commit message with::
 
@@ -316,7 +322,8 @@ use revision numbers etc. for release 0.1.11.)
      twine upload dist/mmf_setup-*
    
 9. Pull the merge from bitbucket to your development machine but **do not update**.
-10. Update the version in ``setup.py`` to ``'0.1.12dev'`` or whatever is relevant.
+10. Update the version in ``setup.py`` and ``meta.yaml`` to
+    ``'0.1.12dev'`` or whatever is relevant.
 11. From the previous commit (the last commit on branch ``0.1.11`` in this case),
     change the branch::
 
@@ -327,7 +334,56 @@ use revision numbers etc. for release 0.1.11.)
       hg com -m "BRN: Start branch 0.1.12"
       hg push -r . --new-branch
 
+**Anaconda**
 
+The information about building the package for conda is specified in
+the `meta.yaml` file.
+
+1. (Optional) Prepare a clean environment::
+     
+      conda env remove -n tst3        # If needed
+      conda create -yn tst3 python=3 anaconda-client conda-build
+      conda activate tst3
+
+   *(I keep the conda build tools in my base environment so I do not
+   need this.)*
+      
+2. Build locally and test::
+
+      conda config --set anaconda_upload no
+      conda build .
+
+3. (Optional) Debugging a failed build. If things go wrong before
+   building, use a conda debug environment::
+
+      conda debug .
+      cd .../conda-bld/debug_.../work && source .../conda-bld/debug_.../work/build_env_setup.sh
+      bash conda_build.sh
+
+   (Optional) Debugging failed tests. Again use conda debug, but
+   provide the broken package::
+
+     conda debug .../conda-bld/broken/mmf_setup-0.11.0-py_0.tar.bz2
+     cd .../conda-bld/debug_.../test_tmp && source .../conda-bld/debug_.../test_tmp/conda_test_env_vars.sh
+     bash conda_test_runner.sh 
+     
+   See the output of conda build for the location::
+
+      Tests failed for mmf_setup-0.3.0-py_0.tar.bz2 - moving package to /data/apps/conda/conda-bld/broken
+      
+3. Login and upload to anaconda cloud::
+
+      CONDA_PACKAGE="$(conda build . --output)"
+      echo $CONDA_PACKAGE
+      anaconda login
+      anaconda upload $CONDA_PACKAGE
+
+5. Test the final package.  If everything is done correctly, you
+   should be able to build a complete environment with this package::
+
+      conda create --use-local -n test_mmf_setup mmf_setup
+      conda activate mmf_setup
+   
 Notes
 =====
 

@@ -63,7 +63,7 @@ except AttributeError:
     command = cmdutil.command(cmdtable)
 
 
-testedwith = '3.6.3'
+testedwith = '5.2.2'
 
 
 ######################################################################
