@@ -9,3 +9,4 @@ htmlcov
 .coverage
 .cache
 */.\#*
+commit_log.txt

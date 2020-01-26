@@ -26,6 +26,7 @@ test: test-hg test-py
 
 clean:
 	rm -rf .pytest_cache
+	rm -rf mmf_setup.egg-info
 	find . -name "*.pyc" -delete
 	find . -name "*.pyo" -delete
 	find . -name "__pycache__" -type d -delete
