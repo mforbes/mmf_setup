@@ -58,7 +58,7 @@ hdf5==1.8.9
 html5lib==0.90
 idle==2.7.3
 jsonpickle==0.4.0
-keyring==0.9
+keyring==0.10
 lib-netcdf4==4.2
 libgdal==1.8.1
 libjpeg==7.0
