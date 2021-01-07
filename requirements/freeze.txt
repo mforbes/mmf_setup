@@ -83,7 +83,7 @@ libxslt==1.1.26
 -e hg+https://bitbucket.org/robertkern/line_profiler@94ae5ec83b536b752acac016ba0522cf2f89cef7#egg=line_profiler-dev
 logilab-astng==0.24.0
 logilab-common==0.58.1
-lxml==2.3.4
+lxml==4.6.2
 matplotlib==1.1.1
 mayavi==4.2.0
 mercurial==2.4-rc

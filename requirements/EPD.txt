@@ -65,7 +65,7 @@ libjpeg==7.0
 libpng==1.2.40
 libxml2==2.7.8
 libxslt==1.1.26
-lxml==2.3.4
+lxml==4.6.2
 matplotlib==1.1.0
 mayavi==4.2.0
 netCDF4==1.0
